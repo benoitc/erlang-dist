@@ -316,9 +316,9 @@ jobs:
               dnf -y install dnf-plugins-core
               dnf -y config-manager --set-enabled crb || true
 
-              # Install build dependencies
+              # Install build dependencies (--allowerasing to handle curl-minimal conflict)
               dnf -y install epel-release || true
-              dnf -y install \
+              dnf -y install --allowerasing \
                 gcc gcc-c++ make \
                 autoconf \
                 ncurses-devel \
@@ -416,9 +416,9 @@ jobs:
               dnf -y install dnf-plugins-core
               dnf -y config-manager --set-enabled crb || true
 
-              # Install build dependencies
+              # Install build dependencies (--allowerasing to handle curl-minimal conflict)
               dnf -y install epel-release || true
-              dnf -y install \
+              dnf -y install --allowerasing \
                 gcc gcc-c++ make \
                 autoconf \
                 ncurses-devel \

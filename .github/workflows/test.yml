@@ -86,26 +86,43 @@ jobs:
 
       - name: Test Erlang
         run: |
-          chmod +x scripts/test-install.sh 2>/dev/null || true
+          # Get installed version
+          INSTALLED=$(erl -eval 'io:format("~s", [erlang:system_info(otp_release)]), halt().' -noshell)
+          EXPECTED_MAJOR=$(echo "${VERSION}" | cut -d. -f1)
 
-          # Basic tests
-          echo "Testing erl command..."
-          erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+          echo "Installed OTP release: ${INSTALLED}"
+          echo "Expected major version: ${EXPECTED_MAJOR}"
+
+          if [ "${INSTALLED}" != "${EXPECTED_MAJOR}" ]; then
+            echo "ERROR: Version mismatch! Expected ${EXPECTED_MAJOR}, got ${INSTALLED}"
+            exit 1
+          fi
+          echo "✓ Version check passed"
 
           echo "Testing erlc..."
           erlc -version
+          echo "✓ erlc works"
 
           echo "Testing escript..."
           escript -version
+          echo "✓ escript works"
 
-          echo "Testing crypto..."
+          echo "Testing crypto application..."
           erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+          echo "✓ crypto works"
 
-          echo "Testing ssl..."
+          echo "Testing ssl application..."
           erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+          echo "✓ ssl works"
 
-          echo "All tests passed!"
-        working-directory: ${{ github.workspace }}
+          echo "Testing compilation..."
+          echo '-module(test). -export([hello/0]). hello() -> "Hello from OTP ${VERSION}".' > /tmp/test.erl
+          erlc -o /tmp /tmp/test.erl
+          erl -pa /tmp -eval 'io:format("~s~n", [test:hello()]), halt().' -noshell
+          echo "✓ Compilation works"
+
+          echo ""
+          echo "All tests passed for ${{ matrix.distro }}!"
 
   # Test on Rocky/CentOS with .rpm
   test-rpm:
@@ -115,9 +132,14 @@ jobs:
       matrix:
         include:
           - image: rockylinux:9
-            distro: el9
+            distro: rocky9
+            name: Rocky Linux 9
           - image: quay.io/centos/centos:stream9
-            distro: el9
+            distro: cs9
+            name: CentOS Stream 9
+          - image: quay.io/centos/centos:stream10-development
+            distro: cs10
+            name: CentOS Stream 10
 
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
@@ -128,13 +150,13 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          dnf install -y curl
+          dnf install -y --allowerasing curl
 
       - name: Download .rpm package
         run: |
           curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-${{ matrix.distro }}-amd64.rpm" \
             -o erlang.rpm || {
-            echo "Package not found, trying tarball..."
+            echo "Package not found for ${{ matrix.distro }}, trying tarball..."
             curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-linux-amd64.tar.gz" \
               -o erlang.tar.gz
           }
@@ -150,19 +172,39 @@ jobs:
 
       - name: Test Erlang
         run: |
-          echo "Testing erl command..."
-          /usr/local/bin/erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+          # Get installed version
+          INSTALLED=$(/usr/local/bin/erl -eval 'io:format("~s", [erlang:system_info(otp_release)]), halt().' -noshell)
+          EXPECTED_MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+
+          echo "Installed OTP release: ${INSTALLED}"
+          echo "Expected major version: ${EXPECTED_MAJOR}"
+
+          if [ "${INSTALLED}" != "${EXPECTED_MAJOR}" ]; then
+            echo "ERROR: Version mismatch! Expected ${EXPECTED_MAJOR}, got ${INSTALLED}"
+            exit 1
+          fi
+          echo "✓ Version check passed"
 
           echo "Testing erlc..."
           /usr/local/bin/erlc -version
+          echo "✓ erlc works"
 
-          echo "Testing crypto..."
+          echo "Testing crypto application..."
           /usr/local/bin/erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+          echo "✓ crypto works"
 
-          echo "Testing ssl..."
+          echo "Testing ssl application..."
           /usr/local/bin/erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+          echo "✓ ssl works"
 
-          echo "All tests passed!"
+          echo "Testing compilation..."
+          echo '-module(test). -export([hello/0]). hello() -> "Hello from OTP".' > /tmp/test.erl
+          /usr/local/bin/erlc -o /tmp /tmp/test.erl
+          /usr/local/bin/erl -pa /tmp -eval 'io:format("~s~n", [test:hello()]), halt().' -noshell
+          echo "✓ Compilation works"
+
+          echo ""
+          echo "All tests passed for ${{ matrix.name }}!"
 
   # Test on macOS with tarball
   test-macos:
@@ -171,10 +213,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
+          - os: macos-12
             arch: x86_64
+            name: macOS Intel
           - os: macos-14
             arch: arm64
+            name: macOS Apple Silicon
 
     runs-on: ${{ matrix.os }}
 
@@ -194,22 +238,43 @@ jobs:
 
       - name: Test Erlang
         run: |
-          echo "Testing erl command..."
-          erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+          # Get installed version
+          INSTALLED=$(erl -eval 'io:format("~s", [erlang:system_info(otp_release)]), halt().' -noshell)
+          EXPECTED_MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+
+          echo "Installed OTP release: ${INSTALLED}"
+          echo "Expected major version: ${EXPECTED_MAJOR}"
+
+          if [ "${INSTALLED}" != "${EXPECTED_MAJOR}" ]; then
+            echo "ERROR: Version mismatch! Expected ${EXPECTED_MAJOR}, got ${INSTALLED}"
+            exit 1
+          fi
+          echo "✓ Version check passed"
 
           echo "Testing erlc..."
           erlc -version
+          echo "✓ erlc works"
 
           echo "Testing escript..."
           escript -version
+          echo "✓ escript works"
 
-          echo "Testing crypto..."
+          echo "Testing crypto application..."
           erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+          echo "✓ crypto works"
 
-          echo "Testing ssl..."
+          echo "Testing ssl application..."
           erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+          echo "✓ ssl works"
 
-          echo "All tests passed!"
+          echo "Testing compilation..."
+          echo '-module(test). -export([hello/0]). hello() -> "Hello from OTP".' > /tmp/test.erl
+          erlc -o /tmp /tmp/test.erl
+          erl -pa /tmp -eval 'io:format("~s~n", [test:hello()]), halt().' -noshell
+          echo "✓ Compilation works"
+
+          echo ""
+          echo "All tests passed for ${{ matrix.name }}!"
 
   # Summary job
   summary:

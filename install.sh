@@ -1,6 +1,6 @@
 #!/bin/sh
 # Universal Erlang/OTP installer
-# Usage: curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh -s -- [VERSION] [PREFIX]
+# Usage: curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- [VERSION] [PREFIX]
 
 set -e
 

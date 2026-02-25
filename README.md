@@ -6,13 +6,13 @@ Pre-built Erlang/OTP binaries for multiple platforms, distributed via GitHub Rel
 
 ```bash
 # Install latest version
-curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh
 
 # Install specific version
-curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh -s -- 27.0
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.0
 
 # Install to custom prefix
-curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh -s -- 27.0 /opt/erlang
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.0 /opt/erlang
 ```
 
 ## Installation Methods
@@ -22,17 +22,17 @@ curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh -s -- 27.0 /opt/er
 The universal installer detects your OS and architecture, downloads the appropriate tarball, verifies the checksum, and extracts to `/usr/local` (or a custom prefix).
 
 ```bash
-curl -fsSL https://USER.github.io/erlang-dist/install.sh | sh -s -- [VERSION] [PREFIX]
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- [VERSION] [PREFIX]
 ```
 
 ### APT Repository (Debian/Ubuntu)
 
 ```bash
 # Add GPG key
-curl -fsSL https://USER.github.io/erlang-dist/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/erlang-dist.gpg
+curl -fsSL https://benoitc.github.io/erlang-dist/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/erlang-dist.gpg
 
 # Add repository
-echo "deb [signed-by=/usr/share/keyrings/erlang-dist.gpg] https://USER.github.io/erlang-dist/apt stable main" | \
+echo "deb [signed-by=/usr/share/keyrings/erlang-dist.gpg] https://benoitc.github.io/erlang-dist/apt stable main" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
 
 # Install
@@ -44,7 +44,7 @@ sudo apt install erlang-27
 
 ```bash
 # Add repository
-sudo curl -fsSL https://USER.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo
 
 # Install
 sudo dnf install erlang-27
@@ -52,14 +52,14 @@ sudo dnf install erlang-27
 
 ### Manual Download
 
-Download tarballs directly from [GitHub Releases](https://github.com/USER/erlang-dist/releases).
+Download tarballs directly from [GitHub Releases](https://github.com/benoitc/erlang-dist/releases).
 
 ```bash
 # Download
-curl -fsSL https://github.com/USER/erlang-dist/releases/download/OTP-27.0/erlang-27.0-linux-amd64.tar.gz -o erlang.tar.gz
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.0/erlang-27.0-linux-amd64.tar.gz -o erlang.tar.gz
 
 # Verify checksum
-curl -fsSL https://github.com/USER/erlang-dist/releases/download/OTP-27.0/SHA256SUMS | grep linux-amd64 | sha256sum -c
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.0/SHA256SUMS | grep linux-amd64 | sha256sum -c
 
 # Extract
 sudo tar xzf erlang.tar.gz -C /

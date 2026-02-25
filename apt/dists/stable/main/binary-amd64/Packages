@@ -1,0 +1,88 @@
+Package: erlang-27
+Version: 27.2
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 187544
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 27.2
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 27.2 pre-built binaries.
+Filename: pool/main/erlang-27.2-debian11-amd64.deb
+Size: 55485612
+SHA256: 0ef1b571b3c54a322117a6ae3586e8893c4b5ae7ae1d7015d0840b925e9565f5
+MD5sum: 8ae6ad0556cba33e473a394df9d2512a
+
+Package: erlang-27
+Version: 27.2
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 171312
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 27.2
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 27.2 pre-built binaries.
+Filename: pool/main/erlang-27.2-debian12-amd64.deb
+Size: 55343456
+SHA256: c098cb7b523ee1a21be9f3940785679799e006eb06ca748f9d7de0f7d51f76d5
+MD5sum: c32eb72d1c01817cde423b8a134e25cc
+
+Package: erlang-27
+Version: 27.2
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 174768
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 27.2
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 27.2 pre-built binaries.
+Filename: pool/main/erlang-27.2-ubuntu2204-amd64.deb
+Size: 58948260
+SHA256: 57306c3a310a4b3563d5e27fc9ee55dfd77fb6dac52e76db916e1bf63f6bc557
+MD5sum: a34ce8f1450eefbd69ecb1a8dc53a199
+
+Package: erlang-27
+Version: 27.2
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 174068
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 27.2
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 27.2 pre-built binaries.
+Filename: pool/main/erlang-27.2-ubuntu2404-amd64.deb
+Size: 58422782
+SHA256: 28d0634e4f0564ead771c75047253ad95767f9865c4f2d8b51eec21f94dadd62
+MD5sum: f61f768dd1a3bd9ca6b98e7f35ea897f
+

@@ -1,0 +1,15 @@
+Origin: erlang-dist
+Label: Erlang Distribution
+Suite: stable
+Codename: stable
+Architectures: amd64 arm64
+Components: main
+Description: Pre-built Erlang/OTP packages
+Date: Wed, 25 Feb 2026 22:57:16 +0000
+SHA256:
+ 3582c5c8db8574834ddd9636246bd3ac5b5355111fa82eee0c127061a0733461     3092 main/binary-amd64/Packages
+ 290843264a0f3ebd609fff3133fdd61666485c1ecbbc5ebda7fceef9c66a1602      798 main/binary-amd64/Packages.gz
+ 40b4782ae89d70fc70f12761e2be421d51fcdd48a3060d9a0849698cf35acb67      840 main/binary-amd64/Packages.xz
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855        0 main/binary-arm64/Packages
+ 9b971200968f3736b4a277b986b994980019e9e97a0d0a8aa3324d743b0f23e5       29 main/binary-arm64/Packages.gz
+ 0040f94d11d0039505328a90b2ff48968db873e9e7967307631bf40ef5679275       32 main/binary-arm64/Packages.xz

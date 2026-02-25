@@ -1,0 +1,124 @@
+name: Publish RPM Repository
+
+on:
+  repository_dispatch:
+    types: [update-rpm]
+  workflow_dispatch:
+    inputs:
+      otp_version:
+        description: 'OTP version to add (optional, will fetch all if empty)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  publish-rpm:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y git createrepo_c curl jq
+
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Configure git safe directory
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Checkout main branch files
+        run: |
+          git fetch origin main
+          git checkout origin/main -- install.sh rpm/erlang-dist.repo versions.json 2>/dev/null || true
+
+      - name: Get OTP version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "${{ inputs.otp_version }}" ]; then
+            echo "version=${{ inputs.otp_version }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.client_payload.otp_version }}" ]; then
+            echo "version=${{ github.event.client_payload.otp_version }}" >> $GITHUB_OUTPUT
+          else
+            # Get latest version from releases
+            VERSION=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name' | sed 's/OTP-//')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download .rpm packages
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p packages
+
+          # Download using curl since gh CLI may not be available
+          RELEASE_INFO=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/OTP-${VERSION}")
+
+          # Download RPM files
+          echo "$RELEASE_INFO" | jq -r '.assets[] | select(.name | endswith(".rpm")) | .browser_download_url' | while read URL; do
+            curl -fsSL "$URL" -o "packages/$(basename "$URL")"
+          done
+
+          ls -la packages/
+
+      - name: Update RPM repository
+        run: |
+          # Create directory structure
+          mkdir -p rpm/x86_64
+          mkdir -p rpm/aarch64
+
+          # Copy packages to appropriate directories
+          for RPM in packages/*amd64*.rpm packages/*x86_64*.rpm; do
+            [ -f "$RPM" ] && cp "$RPM" rpm/x86_64/
+          done
+
+          for RPM in packages/*arm64*.rpm packages/*aarch64*.rpm; do
+            [ -f "$RPM" ] && cp "$RPM" rpm/aarch64/
+          done
+
+          # Create/update repodata
+          for ARCH_DIR in rpm/x86_64 rpm/aarch64; do
+            if [ -d "$ARCH_DIR" ] && ls "$ARCH_DIR"/*.rpm >/dev/null 2>&1; then
+              echo "Creating repodata for $ARCH_DIR..."
+              createrepo_c --update "$ARCH_DIR" || createrepo_c "$ARCH_DIR"
+            fi
+          done
+
+          # Create repo file
+          cat > rpm/erlang-dist.repo << 'EOF'
+          [erlang-dist]
+          name=Erlang Distribution - $basearch
+          baseurl=https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/$basearch
+          enabled=1
+          gpgcheck=0
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git diff --staged --quiet || git commit -m "Update RPM repository for OTP ${{ steps.version.outputs.version }}"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## RPM Repository Updated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Added packages for OTP ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo dnf install erlang-27' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

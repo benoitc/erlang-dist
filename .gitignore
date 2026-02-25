@@ -1,0 +1,30 @@
+# Build artifacts
+*.tar.gz
+*.deb
+*.rpm
+otp_src/
+otp_src_*/
+install/
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# GPG keys (should not be committed)
+*.gpg
+*.asc
+!gpg.key.pub
+
+# RPM build directories
+rpmbuild/
+
+# Test artifacts
+test-results/

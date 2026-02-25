@@ -1,0 +1,113 @@
+name: Check for New OTP Releases
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force_version:
+        description: 'Force build a specific version (optional)'
+        required: false
+        type: string
+      include_prereleases:
+        description: 'Include release candidates'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  check-releases:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for new releases
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_VERSION: ${{ inputs.force_version }}
+          INCLUDE_PRERELEASES: ${{ inputs.include_prereleases || 'true' }}
+        run: |
+          # Get our built versions
+          if [ -f versions.json ]; then
+            BUILT_VERSIONS=$(jq -r '.versions[]' versions.json 2>/dev/null | tr '\n' ' ')
+          else
+            BUILT_VERSIONS=""
+          fi
+          echo "Already built: $BUILT_VERSIONS"
+
+          # Handle forced version
+          if [ -n "$FORCE_VERSION" ]; then
+            echo "Forcing build of version: $FORCE_VERSION"
+            echo "new_versions=$FORCE_VERSION" >> $GITHUB_OUTPUT
+            echo "has_new=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Fetch releases from erlang/otp
+          RELEASES=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-' | head -50)
+
+          NEW_VERSIONS=""
+          for TAG in $RELEASES; do
+            VERSION=${TAG#OTP-}
+
+            # Skip pre-releases if not enabled
+            if [ "$INCLUDE_PRERELEASES" != "true" ] && echo "$VERSION" | grep -qE '(rc|alpha|beta)'; then
+              continue
+            fi
+
+            # Only consider OTP 27+ versions
+            MAJOR=$(echo "$VERSION" | cut -d. -f1 | tr -cd '0-9')
+            if [ "$MAJOR" -lt 27 ] 2>/dev/null; then
+              continue
+            fi
+
+            # Check if we've already built this version
+            if echo "$BUILT_VERSIONS" | grep -qw "$VERSION"; then
+              echo "Already built: $VERSION"
+            else
+              echo "New version found: $VERSION"
+              NEW_VERSIONS="$NEW_VERSIONS $VERSION"
+            fi
+          done
+
+          NEW_VERSIONS=$(echo "$NEW_VERSIONS" | xargs)  # Trim whitespace
+
+          if [ -n "$NEW_VERSIONS" ]; then
+            echo "New versions to build: $NEW_VERSIONS"
+            echo "new_versions=$NEW_VERSIONS" >> $GITHUB_OUTPUT
+            echo "has_new=true" >> $GITHUB_OUTPUT
+          else
+            echo "No new versions found"
+            echo "has_new=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger builds for new versions
+        if: steps.check.outputs.has_new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for VERSION in ${{ steps.check.outputs.new_versions }}; do
+            echo "Triggering build for OTP $VERSION"
+            gh workflow run build.yml -f otp_version="$VERSION"
+
+            # Wait a bit between triggers to avoid rate limiting
+            sleep 10
+          done
+
+      - name: Summary
+        run: |
+          echo "## Release Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check.outputs.has_new }}" == "true" ]; then
+            echo "**New versions found:** ${{ steps.check.outputs.new_versions }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Build workflows have been triggered." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No new versions found." >> $GITHUB_STEP_SUMMARY
+          fi

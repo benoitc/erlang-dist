@@ -1,0 +1,148 @@
+name: Publish APT Repository
+
+on:
+  repository_dispatch:
+    types: [update-apt]
+  workflow_dispatch:
+    inputs:
+      otp_version:
+        description: 'OTP version to add (optional, will fetch all if empty)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  publish-apt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Checkout main branch files
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Setup APT tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+      - name: Get OTP version
+        id: version
+        run: |
+          if [ -n "${{ inputs.otp_version }}" ]; then
+            echo "version=${{ inputs.otp_version }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.client_payload.otp_version }}" ]; then
+            echo "version=${{ github.event.client_payload.otp_version }}" >> $GITHUB_OUTPUT
+          else
+            # Get latest version from releases
+            VERSION=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name' | sed 's/OTP-//')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download .deb packages
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p packages
+
+          # Download all .deb files from the release
+          gh release download "OTP-${VERSION}" -p "*.deb" -D packages --repo ${{ github.repository }} || true
+
+          ls -la packages/
+
+      - name: Update APT repository
+        run: |
+          # Create directory structure
+          mkdir -p apt/pool/main
+          mkdir -p apt/dists/stable/main/binary-amd64
+          mkdir -p apt/dists/stable/main/binary-arm64
+
+          # Copy new packages
+          cp packages/*.deb apt/pool/main/ 2>/dev/null || true
+
+          # Generate Packages files for each architecture
+          cd apt
+
+          for ARCH in amd64 arm64; do
+            PACKAGES_FILE="dists/stable/main/binary-${ARCH}/Packages"
+            > "$PACKAGES_FILE"
+
+            for DEB in pool/main/*${ARCH}*.deb; do
+              [ -f "$DEB" ] || continue
+              echo "Processing: $DEB"
+
+              # Extract control info
+              dpkg-deb -I "$DEB" control | grep -v "^$" >> "$PACKAGES_FILE"
+              echo "Filename: $DEB" >> "$PACKAGES_FILE"
+              echo "Size: $(stat -c%s "$DEB")" >> "$PACKAGES_FILE"
+              echo "SHA256: $(sha256sum "$DEB" | cut -d' ' -f1)" >> "$PACKAGES_FILE"
+              echo "MD5sum: $(md5sum "$DEB" | cut -d' ' -f1)" >> "$PACKAGES_FILE"
+              echo "" >> "$PACKAGES_FILE"
+            done
+
+            # Compress Packages file
+            gzip -9 -c "$PACKAGES_FILE" > "${PACKAGES_FILE}.gz"
+            xz -9 -c "$PACKAGES_FILE" > "${PACKAGES_FILE}.xz" 2>/dev/null || true
+          done
+
+          # Generate Release file
+          RELEASE_FILE="dists/stable/Release"
+          cat > "$RELEASE_FILE" << EOF
+          Origin: erlang-dist
+          Label: Erlang Distribution
+          Suite: stable
+          Codename: stable
+          Architectures: amd64 arm64
+          Components: main
+          Description: Pre-built Erlang/OTP packages
+          Date: $(date -Ru)
+          EOF
+
+          # Add checksums
+          echo "SHA256:" >> "$RELEASE_FILE"
+          for FILE in dists/stable/main/binary-*/Packages*; do
+            [ -f "$FILE" ] || continue
+            RELPATH=${FILE#dists/stable/}
+            SIZE=$(stat -c%s "$FILE")
+            SHA=$(sha256sum "$FILE" | cut -d' ' -f1)
+            printf " %s %8d %s\n" "$SHA" "$SIZE" "$RELPATH" >> "$RELEASE_FILE"
+          done
+
+          cd ..
+
+      - name: Copy install script and configs
+        run: |
+          cp main/install.sh .
+          cp main/apt/conf/distributions apt/conf/ 2>/dev/null || true
+          cp main/versions.json . 2>/dev/null || true
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git diff --staged --quiet || git commit -m "Update APT repository for OTP ${{ steps.version.outputs.version }}"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## APT Repository Updated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Added packages for OTP ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo 'echo "deb https://${{ github.repository_owner }}.github.io/erlang-dist/apt stable main" | sudo tee /etc/apt/sources.list.d/erlang-dist.list' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo apt update && sudo apt install erlang-27' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

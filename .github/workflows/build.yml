@@ -1,0 +1,447 @@
+name: Build Erlang/OTP
+
+on:
+  workflow_dispatch:
+    inputs:
+      otp_version:
+        description: 'OTP version to build (e.g., 27.0, 28.0-rc1)'
+        required: true
+        type: string
+      skip_release:
+        description: 'Skip creating GitHub release (for testing)'
+        required: false
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [build-otp]
+
+env:
+  OTP_VERSION: ${{ inputs.otp_version || github.event.client_payload.otp_version || '27.0' }}
+
+jobs:
+  # ====================
+  # Linux AMD64 Builds
+  # ====================
+  build-linux-amd64:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # DEB-based distributions
+          - os: ubuntu-22.04
+            distro: ubuntu2204
+            pkg_type: deb
+          - os: ubuntu-24.04
+            distro: ubuntu2404
+            pkg_type: deb
+          # Debian builds use container on ubuntu-latest
+          - os: ubuntu-latest
+            container: debian:11
+            distro: debian11
+            pkg_type: deb
+          - os: ubuntu-latest
+            container: debian:12
+            distro: debian12
+            pkg_type: deb
+          # RPM-based distributions (using containers)
+          - os: ubuntu-latest
+            container: rockylinux:9
+            distro: el9
+            pkg_type: rpm
+          - os: ubuntu-latest
+            container: quay.io/centos/centos:stream9
+            distro: el9
+            pkg_type: rpm
+          - os: ubuntu-latest
+            container: quay.io/centos/centos:stream10-development
+            distro: el10
+            pkg_type: rpm
+
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies (DEB)
+        if: matrix.pkg_type == 'deb'
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            autoconf \
+            curl \
+            libncurses5-dev \
+            libssl-dev \
+            libwxgtk3.2-dev || apt-get install -y libwxgtk3.0-gtk3-dev || true \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libpng-dev \
+            libssh-dev \
+            unixodbc-dev \
+            xsltproc \
+            fop \
+            libxml2-utils \
+            dpkg-dev
+
+      - name: Install build dependencies (RPM)
+        if: matrix.pkg_type == 'rpm'
+        run: |
+          dnf install -y epel-release || true
+          dnf install -y \
+            gcc gcc-c++ make \
+            autoconf \
+            curl \
+            ncurses-devel \
+            openssl-devel \
+            wxGTK-devel || dnf install -y wxGTK3-devel || true \
+            mesa-libGL-devel \
+            mesa-libGLU-devel \
+            libpng-devel \
+            libssh-devel \
+            unixODBC-devel \
+            libxslt \
+            fop \
+            rpm-build
+
+      - name: Download OTP source
+        run: |
+          curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" \
+            -o otp_src.tar.gz
+          tar xzf otp_src.tar.gz
+          mv otp_src_${OTP_VERSION} otp_src
+
+      - name: Build OTP
+        run: |
+          cd otp_src
+          export ERL_TOP=$(pwd)
+          ./configure \
+            --prefix=/usr/local \
+            --enable-threads \
+            --enable-smp-support \
+            --enable-kernel-poll \
+            --enable-ssl \
+            --enable-dynamic-ssl-lib \
+            --with-ssl \
+            --enable-jit
+          make -j$(nproc)
+
+      - name: Install to staging directory
+        run: |
+          cd otp_src
+          make DESTDIR=$(pwd)/../install install
+
+      - name: Create tarball
+        run: |
+          cd install
+          tar czf ../erlang-${OTP_VERSION}-linux-amd64.tar.gz .
+
+      - name: Create .deb package
+        if: matrix.pkg_type == 'deb'
+        run: |
+          chmod +x scripts/build-deb.sh
+          ./scripts/build-deb.sh ${OTP_VERSION} amd64 ${{ matrix.distro }}
+          mv *.deb erlang-${OTP_VERSION}-${{ matrix.distro }}-amd64.deb || true
+
+      - name: Create .rpm package
+        if: matrix.pkg_type == 'rpm'
+        run: |
+          chmod +x scripts/build-rpm.sh
+          ./scripts/build-rpm.sh ${OTP_VERSION} amd64 ${{ matrix.distro }}
+          mv *.rpm erlang-${OTP_VERSION}-${{ matrix.distro }}-amd64.rpm || true
+
+      - name: Generate checksums
+        run: |
+          sha256sum erlang-${OTP_VERSION}-linux-amd64.tar.gz > checksums-${{ matrix.distro }}-amd64.txt
+          sha256sum *.deb >> checksums-${{ matrix.distro }}-amd64.txt 2>/dev/null || true
+          sha256sum *.rpm >> checksums-${{ matrix.distro }}-amd64.txt 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-${{ matrix.distro }}-amd64
+          path: |
+            erlang-*.tar.gz
+            *.deb
+            *.rpm
+            checksums-*.txt
+
+  # ====================
+  # Linux ARM64 Builds (QEMU emulation)
+  # ====================
+  build-linux-arm64:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: ubuntu2204
+            image: arm64v8/ubuntu:22.04
+            pkg_type: deb
+          - distro: ubuntu2404
+            image: arm64v8/ubuntu:24.04
+            pkg_type: deb
+          - distro: debian11
+            image: arm64v8/debian:11
+            pkg_type: deb
+          - distro: debian12
+            image: arm64v8/debian:12
+            pkg_type: deb
+          - distro: el9
+            image: arm64v8/rockylinux:9
+            pkg_type: rpm
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build in ARM64 container
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e OTP_VERSION=${OTP_VERSION} \
+            -e DISTRO=${{ matrix.distro }} \
+            -e PKG_TYPE=${{ matrix.pkg_type }} \
+            ${{ matrix.image }} \
+            bash -c '
+              set -e
+
+              # Install dependencies based on package type
+              if [ "$PKG_TYPE" = "deb" ]; then
+                apt-get update
+                apt-get install -y \
+                  build-essential autoconf curl \
+                  libncurses5-dev libssl-dev \
+                  libwxgtk3.2-dev || apt-get install -y libwxgtk3.0-gtk3-dev || true
+                apt-get install -y \
+                  libgl1-mesa-dev libglu1-mesa-dev libpng-dev \
+                  libssh-dev unixodbc-dev xsltproc fop libxml2-utils dpkg-dev
+              else
+                dnf install -y epel-release || true
+                dnf install -y \
+                  gcc gcc-c++ make autoconf curl \
+                  ncurses-devel openssl-devel \
+                  wxGTK-devel || dnf install -y wxGTK3-devel || true
+                dnf install -y \
+                  mesa-libGL-devel mesa-libGLU-devel libpng-devel \
+                  libssh-devel unixODBC-devel libxslt fop rpm-build
+              fi
+
+              # Download and build
+              curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" -o otp_src.tar.gz
+              tar xzf otp_src.tar.gz
+              mv otp_src_${OTP_VERSION} otp_src
+
+              cd otp_src
+              export ERL_TOP=$(pwd)
+              ./configure \
+                --prefix=/usr/local \
+                --enable-threads \
+                --enable-smp-support \
+                --enable-kernel-poll \
+                --enable-ssl \
+                --enable-dynamic-ssl-lib \
+                --with-ssl
+              make -j$(nproc)
+              make DESTDIR=$(pwd)/../install install
+
+              cd ../install
+              tar czf ../erlang-${OTP_VERSION}-linux-arm64.tar.gz .
+              cd ..
+
+              # Build packages
+              chmod +x scripts/build-deb.sh scripts/build-rpm.sh
+              if [ "$PKG_TYPE" = "deb" ]; then
+                ./scripts/build-deb.sh ${OTP_VERSION} arm64 ${DISTRO}
+                mv *.deb erlang-${OTP_VERSION}-${DISTRO}-arm64.deb 2>/dev/null || true
+              else
+                ./scripts/build-rpm.sh ${OTP_VERSION} arm64 ${DISTRO}
+                mv *.rpm erlang-${OTP_VERSION}-${DISTRO}-arm64.rpm 2>/dev/null || true
+              fi
+
+              # Checksums
+              sha256sum erlang-${OTP_VERSION}-linux-arm64.tar.gz > checksums-${DISTRO}-arm64.txt
+              sha256sum *.deb >> checksums-${DISTRO}-arm64.txt 2>/dev/null || true
+              sha256sum *.rpm >> checksums-${DISTRO}-arm64.txt 2>/dev/null || true
+            '
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-${{ matrix.distro }}-arm64
+          path: |
+            erlang-*.tar.gz
+            *.deb
+            *.rpm
+            checksums-*.txt
+
+  # ====================
+  # macOS Builds
+  # ====================
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            arch: x86_64
+          - os: macos-14
+            arch: arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          brew install autoconf openssl@3 wxwidgets fop
+
+      - name: Download OTP source
+        run: |
+          curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" \
+            -o otp_src.tar.gz
+          tar xzf otp_src.tar.gz
+          mv otp_src_${OTP_VERSION} otp_src
+
+      - name: Build OTP
+        run: |
+          cd otp_src
+          export ERL_TOP=$(pwd)
+          ./configure \
+            --prefix=/usr/local \
+            --enable-threads \
+            --enable-smp-support \
+            --enable-kernel-poll \
+            --enable-ssl \
+            --enable-dynamic-ssl-lib \
+            --with-ssl=$(brew --prefix openssl@3) \
+            --enable-jit
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Create tarball
+        run: |
+          cd otp_src
+          make DESTDIR=$(pwd)/../install install
+          cd ../install
+          tar czf ../erlang-${OTP_VERSION}-darwin-${{ matrix.arch }}.tar.gz .
+
+      - name: Generate checksums
+        run: |
+          shasum -a 256 erlang-${OTP_VERSION}-darwin-${{ matrix.arch }}.tar.gz > checksums-darwin-${{ matrix.arch }}.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-macos-${{ matrix.arch }}
+          path: |
+            erlang-*.tar.gz
+            checksums-*.txt
+
+  # ====================
+  # Create Release
+  # ====================
+  release:
+    needs: [build-linux-amd64, build-linux-arm64, build-macos]
+    if: ${{ !inputs.skip_release }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Consolidate artifacts
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.tar.gz" -o -name "*.deb" -o -name "*.rpm" \) -exec cp {} release/ \;
+
+          # Deduplicate tarballs (same arch produces same tarball across distros)
+          cd release
+          for f in erlang-*-linux-*.tar.gz; do
+            # Keep only one copy per arch
+            base=$(echo "$f" | sed 's/-linux-/-linux-/')
+            if [ -f "$base" ]; then
+              # Already exists, remove duplicate
+              rm -f "$f" 2>/dev/null || true
+            fi
+          done
+          cd ..
+
+      - name: Merge checksums
+        run: |
+          cat artifacts/*/checksums-*.txt | sort -u > release/SHA256SUMS
+
+      - name: Update versions.json
+        run: |
+          if [ -f versions.json ]; then
+            # Add new version if not present
+            if ! jq -e ".versions | index(\"${OTP_VERSION}\")" versions.json > /dev/null; then
+              jq ".versions += [\"${OTP_VERSION}\"] | .latest = \"${OTP_VERSION}\"" versions.json > versions.json.tmp
+              mv versions.json.tmp versions.json
+            fi
+          else
+            echo '{"versions": ["'"${OTP_VERSION}"'"], "latest": "'"${OTP_VERSION}"'"}' > versions.json
+          fi
+          cp versions.json release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: OTP-${{ env.OTP_VERSION }}
+          name: Erlang/OTP ${{ env.OTP_VERSION }}
+          body: |
+            ## Erlang/OTP ${{ env.OTP_VERSION }}
+
+            Pre-built binaries for multiple platforms.
+
+            ### Quick Install
+
+            ```bash
+            curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/install.sh | sh -s -- ${{ env.OTP_VERSION }}
+            ```
+
+            ### Available Packages
+
+            **Linux (amd64 & arm64):**
+            - Ubuntu 22.04, 24.04 (.deb)
+            - Debian 11, 12 (.deb)
+            - Rocky Linux 9 / CentOS Stream 9, 10 (.rpm)
+            - Generic tarball
+
+            **macOS:**
+            - Intel (x86_64) tarball
+            - Apple Silicon (arm64) tarball
+
+            ### Verification
+
+            ```bash
+            sha256sum -c SHA256SUMS
+            ```
+          files: |
+            release/*
+          draft: false
+          prerelease: ${{ contains(env.OTP_VERSION, 'rc') }}
+
+      - name: Trigger APT repository update
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: update-apt
+          client-payload: '{"otp_version": "${{ env.OTP_VERSION }}"}'
+
+      - name: Trigger RPM repository update
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: update-rpm
+          client-payload: '{"otp_version": "${{ env.OTP_VERSION }}"}'

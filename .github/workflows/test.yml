@@ -1,0 +1,228 @@
+name: Test Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      otp_version:
+        description: 'OTP version to test'
+        required: true
+        type: string
+  workflow_run:
+    workflows: ["Build Erlang/OTP"]
+    types:
+      - completed
+
+env:
+  OTP_VERSION: ${{ inputs.otp_version || '' }}
+
+jobs:
+  # Determine version to test from workflow_run
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get.outputs.version }}
+    steps:
+      - name: Get version from workflow_run
+        id: get
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "$OTP_VERSION" ]; then
+            echo "version=$OTP_VERSION" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.workflow_run.head_branch }}" ]; then
+            # Try to extract from release tag
+            VERSION=$(gh api repos/${{ github.repository }}/releases/latest -q '.tag_name' | sed 's/OTP-//')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No version specified"
+            exit 1
+          fi
+
+  # Test on Ubuntu/Debian with .deb
+  test-deb:
+    needs: get-version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            distro: ubuntu2204
+          - image: ubuntu:24.04
+            distro: ubuntu2404
+          - image: debian:11
+            distro: debian11
+          - image: debian:12
+            distro: debian12
+
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+
+    env:
+      VERSION: ${{ needs.get-version.outputs.version }}
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y curl ca-certificates
+
+      - name: Download .deb package
+        run: |
+          curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-${{ matrix.distro }}-amd64.deb" \
+            -o erlang.deb || {
+            echo "Package not found for ${{ matrix.distro }}, trying tarball..."
+            curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-linux-amd64.tar.gz" \
+              -o erlang.tar.gz
+          }
+
+      - name: Install package
+        run: |
+          if [ -f erlang.deb ]; then
+            apt-get install -y ./erlang.deb || dpkg -i ./erlang.deb && apt-get install -f -y
+          else
+            mkdir -p /usr/local
+            tar xzf erlang.tar.gz -C / --strip-components=0
+          fi
+
+      - name: Test Erlang
+        run: |
+          chmod +x scripts/test-install.sh 2>/dev/null || true
+
+          # Basic tests
+          echo "Testing erl command..."
+          erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+
+          echo "Testing erlc..."
+          erlc -version
+
+          echo "Testing escript..."
+          escript -version
+
+          echo "Testing crypto..."
+          erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+
+          echo "Testing ssl..."
+          erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+
+          echo "All tests passed!"
+        working-directory: ${{ github.workspace }}
+
+  # Test on Rocky/CentOS with .rpm
+  test-rpm:
+    needs: get-version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: rockylinux:9
+            distro: el9
+          - image: quay.io/centos/centos:stream9
+            distro: el9
+
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+
+    env:
+      VERSION: ${{ needs.get-version.outputs.version }}
+
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y curl
+
+      - name: Download .rpm package
+        run: |
+          curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-${{ matrix.distro }}-amd64.rpm" \
+            -o erlang.rpm || {
+            echo "Package not found, trying tarball..."
+            curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-linux-amd64.tar.gz" \
+              -o erlang.tar.gz
+          }
+
+      - name: Install package
+        run: |
+          if [ -f erlang.rpm ]; then
+            dnf install -y ./erlang.rpm || rpm -ivh --nodeps ./erlang.rpm
+          else
+            mkdir -p /usr/local
+            tar xzf erlang.tar.gz -C / --strip-components=0
+          fi
+
+      - name: Test Erlang
+        run: |
+          echo "Testing erl command..."
+          /usr/local/bin/erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+
+          echo "Testing erlc..."
+          /usr/local/bin/erlc -version
+
+          echo "Testing crypto..."
+          /usr/local/bin/erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+
+          echo "Testing ssl..."
+          /usr/local/bin/erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+
+          echo "All tests passed!"
+
+  # Test on macOS with tarball
+  test-macos:
+    needs: get-version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            arch: x86_64
+          - os: macos-14
+            arch: arm64
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      VERSION: ${{ needs.get-version.outputs.version }}
+
+    steps:
+      - name: Download tarball
+        run: |
+          curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-darwin-${{ matrix.arch }}.tar.gz" \
+            -o erlang.tar.gz
+
+      - name: Extract and install
+        run: |
+          sudo mkdir -p /usr/local
+          sudo tar xzf erlang.tar.gz -C / --strip-components=0
+
+      - name: Test Erlang
+        run: |
+          echo "Testing erl command..."
+          erl -eval 'io:format("OTP Release: ~s~n", [erlang:system_info(otp_release)]), halt().' -noshell
+
+          echo "Testing erlc..."
+          erlc -version
+
+          echo "Testing escript..."
+          escript -version
+
+          echo "Testing crypto..."
+          erl -eval 'crypto:start(), io:format("crypto: ok~n"), halt().' -noshell
+
+          echo "Testing ssl..."
+          erl -eval 'ssl:start(), io:format("ssl: ok~n"), halt().' -noshell
+
+          echo "All tests passed!"
+
+  # Summary job
+  summary:
+    needs: [test-deb, test-rpm, test-macos]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| DEB (Ubuntu/Debian) | ${{ needs.test-deb.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| RPM (Rocky/CentOS) | ${{ needs.test-rpm.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | ${{ needs.test-macos.result }} |" >> $GITHUB_STEP_SUMMARY

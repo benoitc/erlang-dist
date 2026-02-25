@@ -53,6 +53,9 @@ Source0:        %{name}-%{version}.tar.gz
 BuildArch:      $RPM_ARCH
 AutoReqProv:    no
 
+# Disable rpath check (Erlang embeds search paths for OpenSSL)
+%define __brp_check_rpaths %{nil}
+
 Requires:       glibc
 Requires:       ncurses-libs
 Requires:       openssl-libs

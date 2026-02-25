@@ -291,100 +291,6 @@ jobs:
             checksums-*.txt
 
   # ====================
-  # Linux AMD64 Builds (RPM - Rocky Linux)
-  # ====================
-  build-rpm-amd64:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - container: rockylinux/rockylinux:9
-            distro: rocky9
-
-    runs-on: ubuntu-latest
-    container:
-      image: ${{ matrix.container }}
-      options: --user root
-
-    steps:
-      - name: Install prerequisites
-        run: |
-          dnf install -y --allowerasing curl git
-
-      - uses: actions/checkout@v4
-
-      - name: Install build dependencies
-        run: |
-          dnf install -y epel-release || true
-          dnf install -y --allowerasing \
-            gcc gcc-c++ make \
-            autoconf \
-            ncurses-devel \
-            openssl-devel \
-            mesa-libGL-devel \
-            mesa-libGLU-devel \
-            libpng-devel \
-            libssh-devel \
-            unixODBC-devel \
-            libxslt \
-            rpm-build \
-            perl \
-            tar
-          dnf install -y wxGTK3-devel fop || true
-
-      - name: Download OTP source
-        run: |
-          curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" \
-            -o otp_src.tar.gz
-          tar xzf otp_src.tar.gz
-          mv otp_src_${OTP_VERSION} otp_src
-
-      - name: Build OTP
-        run: |
-          cd otp_src
-          export ERL_TOP=$(pwd)
-          ./configure \
-            --prefix=/usr/local \
-            --enable-threads \
-            --enable-smp-support \
-            --enable-kernel-poll \
-            --enable-ssl \
-            --enable-dynamic-ssl-lib \
-            --with-ssl \
-            --enable-jit
-          make -j$(nproc)
-
-      - name: Install to staging directory
-        run: |
-          cd otp_src
-          make DESTDIR=$(pwd)/../install install
-
-      - name: Create tarball
-        run: |
-          cd install
-          tar czf ../erlang-${OTP_VERSION}-linux-amd64.tar.gz .
-
-      - name: Create .rpm package
-        run: |
-          chmod +x scripts/build-rpm.sh
-          ./scripts/build-rpm.sh ${OTP_VERSION} amd64 ${{ matrix.distro }}
-          mv *.rpm erlang-${OTP_VERSION}-${{ matrix.distro }}-amd64.rpm || true
-
-      - name: Generate checksums
-        run: |
-          sha256sum erlang-${OTP_VERSION}-linux-amd64.tar.gz > checksums-${{ matrix.distro }}-amd64.txt
-          sha256sum *.rpm >> checksums-${{ matrix.distro }}-amd64.txt 2>/dev/null || true
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: erlang-${{ matrix.distro }}-amd64
-          path: |
-            erlang-*.tar.gz
-            *.rpm
-            checksums-*.txt
-
-  # ====================
   # macOS Builds
   # ====================
   build-macos:
@@ -451,7 +357,7 @@ jobs:
   # Create Release
   # ====================
   release:
-    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian-amd64, build-rpm-amd64, build-macos]
+    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian-amd64, build-macos]
     if: ${{ !inputs.skip_release && always() && contains(needs.*.result, 'success') }}
     runs-on: ubuntu-latest
     permissions:
@@ -525,7 +431,6 @@ jobs:
             **Linux (amd64 & arm64):**
             - Ubuntu 22.04, 24.04 (.deb)
             - Debian 11, 12 (.deb)
-            - Rocky Linux 9 (.rpm)
             - Generic tarball
 
             **macOS:**
@@ -547,11 +452,4 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           event-type: update-apt
-          client-payload: '{"otp_version": "${{ env.OTP_VERSION }}"}'
-
-      - name: Trigger RPM repository update
-        if: success()
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          event-type: update-rpm
           client-payload: '{"otp_version": "${{ env.OTP_VERSION }}"}'

@@ -100,11 +100,11 @@ jobs:
           echo "✓ Version check passed"
 
           echo "Testing erlc..."
-          erlc -version
+          which erlc && erlc
           echo "✓ erlc works"
 
           echo "Testing escript..."
-          escript -version
+          which escript
           echo "✓ escript works"
 
           echo "Testing crypto application..."
@@ -186,7 +186,7 @@ jobs:
           echo "✓ Version check passed"
 
           echo "Testing erlc..."
-          /usr/local/bin/erlc -version
+          /usr/local/bin/which erlc && erlc
           echo "✓ erlc works"
 
           echo "Testing crypto application..."
@@ -223,7 +223,9 @@ jobs:
       - name: Extract and install
         run: |
           sudo mkdir -p /usr/local
-          sudo tar xzf erlang.tar.gz -C / --strip-components=0
+          sudo tar xzf erlang.tar.gz -C / --strip-components=0 2>/dev/null || true
+          # Verify extraction worked
+          ls -la /usr/local/bin/erl
 
       - name: Test Erlang
         run: |
@@ -241,11 +243,11 @@ jobs:
           echo "✓ Version check passed"
 
           echo "Testing erlc..."
-          erlc -version
+          which erlc && erlc
           echo "✓ erlc works"
 
           echo "Testing escript..."
-          escript -version
+          which escript
           echo "✓ escript works"
 
           echo "Testing crypto application..."

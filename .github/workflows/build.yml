@@ -310,7 +310,7 @@ jobs:
 
               # Use alternative Rocky Linux mirrors (fallback for mirror outages)
               sed -i "s|^mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/rocky*.repo
-              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirror.math.princeton.edu/pub/rockylinux|g" /etc/yum.repos.d/rocky*.repo
+              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirrors.rit.edu/rocky|g" /etc/yum.repos.d/rocky*.repo
 
               # Clean and refresh repos
               dnf -y clean all
@@ -504,7 +504,7 @@ jobs:
 
               # Use alternative Rocky Linux mirrors (fallback for mirror outages)
               sed -i "s|^mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/rocky*.repo
-              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirror.math.princeton.edu/pub/rockylinux|g" /etc/yum.repos.d/rocky*.repo
+              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirrors.rit.edu/rocky|g" /etc/yum.repos.d/rocky*.repo
 
               # Clean and refresh repos
               dnf -y clean all

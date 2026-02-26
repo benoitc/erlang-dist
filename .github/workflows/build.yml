@@ -481,23 +481,18 @@ jobs:
             checksums-*.txt
 
   # ====================
-  # Linux ARM64 Builds (Rocky Linux via Docker + QEMU)
+  # Linux ARM64 Builds (Rocky Linux via Docker on native ARM64)
   # ====================
   build-rocky-arm64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
       - name: Build in Rocky Linux container (ARM64)
         run: |
-          docker pull --platform linux/arm64 rockylinux:9
-          docker run --rm -t --platform linux/arm64 \
+          docker pull rockylinux:9
+          docker run --rm -t \
             -v "$PWD:/src" -w /src \
             -e OTP_VERSION=${OTP_VERSION} \
             rockylinux:9 bash -lc '
@@ -576,7 +571,7 @@ jobs:
             checksums-*.txt
 
   # ====================
-  # Linux ARM64 Builds (CentOS Stream via Docker + QEMU)
+  # Linux ARM64 Builds (CentOS Stream via Docker on native ARM64)
   # ====================
   build-centos-arm64:
     strategy:
@@ -588,20 +583,15 @@ jobs:
           - image: quay.io/centos/centos:stream10-development
             distro: cs10
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
       - name: Build in CentOS container (ARM64)
         run: |
-          docker pull --platform linux/arm64 ${{ matrix.image }}
-          docker run --rm -t --platform linux/arm64 \
+          docker pull ${{ matrix.image }}
+          docker run --rm -t \
             -v "$PWD:/src" -w /src \
             -e OTP_VERSION=${OTP_VERSION} \
             -e DISTRO=${{ matrix.distro }} \

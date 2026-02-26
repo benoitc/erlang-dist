@@ -108,8 +108,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add -A
-          git diff --staged --quiet || git commit -m "Update RPM repository for OTP ${{ steps.version.outputs.version }}"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Update RPM repository for OTP ${{ steps.version.outputs.version }}"
+            # Pull with rebase to handle concurrent updates
+            git pull --rebase origin gh-pages || true
+            git push
+          fi
 
       - name: Summary
         run: |

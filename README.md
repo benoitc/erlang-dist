@@ -40,8 +40,14 @@ sudo apt install erlang-27
 ### YUM/DNF Repository (RHEL/Rocky/CentOS)
 
 ```bash
-# Add repository
-sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo
+# Rocky Linux 9
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-rocky9.repo -o /etc/yum.repos.d/erlang-dist.repo
+
+# CentOS Stream 9
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -o /etc/yum.repos.d/erlang-dist.repo
+
+# CentOS Stream 10
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs10.repo -o /etc/yum.repos.d/erlang-dist.repo
 
 # Install
 sudo dnf install erlang-27

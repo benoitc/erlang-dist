@@ -72,35 +72,73 @@ jobs:
 
       - name: Update RPM repository
         run: |
-          # Create directory structure
-          mkdir -p rpm/x86_64
-          mkdir -p rpm/aarch64
-
-          # Copy packages to appropriate directories
-          for RPM in packages/*amd64*.rpm packages/*x86_64*.rpm; do
-            [ -f "$RPM" ] && cp "$RPM" rpm/x86_64/
+          # Create directory structure per distro
+          for DISTRO in rocky9 cs9 cs10; do
+            mkdir -p rpm/${DISTRO}/x86_64
+            mkdir -p rpm/${DISTRO}/aarch64
           done
 
-          for RPM in packages/*arm64*.rpm packages/*aarch64*.rpm; do
-            [ -f "$RPM" ] && cp "$RPM" rpm/aarch64/
-          done
+          # Copy packages to appropriate distro/arch directories
+          for RPM in packages/*.rpm; do
+            [ -f "$RPM" ] || continue
+            BASENAME=$(basename "$RPM")
 
-          # Create/update repodata
-          for ARCH_DIR in rpm/x86_64 rpm/aarch64; do
-            if [ -d "$ARCH_DIR" ] && ls "$ARCH_DIR"/*.rpm >/dev/null 2>&1; then
-              echo "Creating repodata for $ARCH_DIR..."
-              createrepo_c --update "$ARCH_DIR" || createrepo_c "$ARCH_DIR"
+            # Determine distro from filename
+            if [[ "$BASENAME" == *-rocky9-* ]]; then
+              DISTRO="rocky9"
+            elif [[ "$BASENAME" == *-cs9-* ]]; then
+              DISTRO="cs9"
+            elif [[ "$BASENAME" == *-cs10-* ]]; then
+              DISTRO="cs10"
+            else
+              echo "Unknown distro in $BASENAME, skipping"
+              continue
             fi
+
+            # Determine arch from filename
+            if [[ "$BASENAME" == *amd64* ]] || [[ "$BASENAME" == *x86_64* ]]; then
+              ARCH="x86_64"
+            elif [[ "$BASENAME" == *arm64* ]] || [[ "$BASENAME" == *aarch64* ]]; then
+              ARCH="aarch64"
+            else
+              echo "Unknown arch in $BASENAME, skipping"
+              continue
+            fi
+
+            echo "Copying $BASENAME to rpm/${DISTRO}/${ARCH}/"
+            cp "$RPM" "rpm/${DISTRO}/${ARCH}/"
           done
 
-          # Create repo file
-          cat > rpm/erlang-dist.repo << 'EOF'
+          # Create/update repodata for each distro/arch
+          for DISTRO in rocky9 cs9 cs10; do
+            for ARCH in x86_64 aarch64; do
+              REPO_DIR="rpm/${DISTRO}/${ARCH}"
+              if [ -d "$REPO_DIR" ] && ls "$REPO_DIR"/*.rpm >/dev/null 2>&1; then
+                echo "Creating repodata for $REPO_DIR..."
+                createrepo_c --update "$REPO_DIR" || createrepo_c "$REPO_DIR"
+              fi
+            done
+          done
+
+          # Create repo files for each distro
+          for DISTRO in rocky9 cs9 cs10; do
+            cat > rpm/erlang-dist-${DISTRO}.repo << EOF
           [erlang-dist]
-          name=Erlang Distribution - $basearch
-          baseurl=https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/$basearch
+          name=Erlang Distribution for ${DISTRO} - \$basearch
+          baseurl=https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/${DISTRO}/\$basearch
           enabled=1
           gpgcheck=0
           EOF
+          done
+
+          # Create auto-detect repo file
+          cat > rpm/erlang-dist.repo << 'REPOEOF'
+          [erlang-dist]
+          name=Erlang Distribution - $basearch
+          baseurl=https://benoitc.github.io/erlang-dist/rpm/$releasever/$basearch
+          enabled=1
+          gpgcheck=0
+          REPOEOF
 
       - name: Commit and push
         run: |
@@ -123,6 +161,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Installation" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
+          echo '# Rocky Linux 9' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist-rocky9.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '# CentOS Stream 9' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
           echo 'sudo dnf install erlang-27' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

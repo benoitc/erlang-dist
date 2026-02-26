@@ -80,10 +80,15 @@ sudo tar xzf erlang.tar.gz -C /
 
 ## Available Versions
 
-- **Erlang/OTP 28.3.2** (latest)
-- **Erlang/OTP 27.2**
+**OTP 28 (current):**
+- 28.3.2 (latest)
+- 28.2, 28.1.1, 28.0.4
 
-Builds are automatically triggered when new releases are published on [erlang/otp](https://github.com/erlang/otp).
+**OTP 27 (LTS):**
+- 27.3.4.8 (latest)
+- 27.2.4, 27.1.3, 27.0.1
+
+Builds are automatically triggered when new releases are published on [erlang/otp](https://github.com/erlang/otp). The latest patch version for each minor series is built and maintained.
 
 ## Build Configuration
 

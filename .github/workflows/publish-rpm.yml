@@ -17,12 +17,12 @@ permissions:
 jobs:
   publish-rpm:
     runs-on: ubuntu-latest
-    container: rockylinux:9
+    container: fedora:latest
 
     steps:
       - name: Install dependencies
         run: |
-          dnf install -y --allowerasing git createrepo_c curl jq
+          dnf install -y git createrepo_c curl jq
 
       - uses: actions/checkout@v4
         with:

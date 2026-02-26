@@ -43,29 +43,37 @@ jobs:
             exit 0
           fi
 
-          # Get ONLY the latest stable release for each major version (27, 28)
-          # Skip RCs, alphas, betas - only stable releases
-          LATEST_27=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-27\.' | grep -v -E '(rc|alpha|beta)' | head -1 | sed 's/OTP-//')
-          LATEST_28=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-28\.' | grep -v -E '(rc|alpha|beta)' | head -1 | sed 's/OTP-//')
+          # Get all stable releases (skip RCs, alphas, betas)
+          ALL_RELEASES=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep -E '^OTP-[0-9]+\.' | grep -v -E '(rc|alpha|beta)' | sed 's/OTP-//')
 
-          echo "Latest OTP 27: $LATEST_27"
-          echo "Latest OTP 28: $LATEST_28"
+          # Find the two latest major versions (N and N-1)
+          MAJOR_N=$(echo "$ALL_RELEASES" | cut -d. -f1 | sort -rn | uniq | head -1)
+          MAJOR_N_1=$(echo "$ALL_RELEASES" | cut -d. -f1 | sort -rn | uniq | head -2 | tail -1)
+
+          echo "Tracking major versions: $MAJOR_N (current) and $MAJOR_N_1 (previous)"
+
+          # Get latest stable release for each major version
+          LATEST_N=$(echo "$ALL_RELEASES" | grep "^${MAJOR_N}\." | head -1)
+          LATEST_N_1=$(echo "$ALL_RELEASES" | grep "^${MAJOR_N_1}\." | head -1)
+
+          echo "Latest OTP $MAJOR_N: $LATEST_N"
+          echo "Latest OTP $MAJOR_N_1: $LATEST_N_1"
 
           NEW_VERSIONS=""
 
-          # Check if we need to build latest 27
-          if [ -n "$LATEST_27" ]; then
-            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_27"; then
-              echo "New version: $LATEST_27"
-              NEW_VERSIONS="$LATEST_27"
+          # Check if we need to build latest N
+          if [ -n "$LATEST_N" ]; then
+            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_N"; then
+              echo "New version: $LATEST_N"
+              NEW_VERSIONS="$LATEST_N"
             fi
           fi
 
-          # Check if we need to build latest 28
-          if [ -n "$LATEST_28" ]; then
-            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_28"; then
-              echo "New version: $LATEST_28"
-              NEW_VERSIONS="$NEW_VERSIONS $LATEST_28"
+          # Check if we need to build latest N-1
+          if [ -n "$LATEST_N_1" ]; then
+            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_N_1"; then
+              echo "New version: $LATEST_N_1"
+              NEW_VERSIONS="$NEW_VERSIONS $LATEST_N_1"
             fi
           fi
 

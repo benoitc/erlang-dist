@@ -768,15 +768,52 @@ jobs:
 
       - name: Update versions.json
         run: |
+          # Function to compare versions (returns 0 if $1 > $2)
+          version_gt() {
+            test "$(printf '%s\n' "$1" "$2" | sort -V | tail -n1)" = "$1" && test "$1" != "$2"
+          }
+
+          MAJOR_VERSION="${OTP_VERSION%%.*}"
+
           if [ -f versions.json ]; then
+            # Add version if not already present
             if ! jq -e ".versions | index(\"${OTP_VERSION}\")" versions.json > /dev/null; then
-              jq ".versions += [\"${OTP_VERSION}\"] | .latest = \"${OTP_VERSION}\"" versions.json > versions.json.tmp
+              jq ".versions += [\"${OTP_VERSION}\"]" versions.json > versions.json.tmp
               mv versions.json.tmp versions.json
             fi
+
+            # Update latest for this major version
+            CURRENT_LATEST=$(jq -r ".latest_${MAJOR_VERSION} // \"\"" versions.json)
+            if [ -z "$CURRENT_LATEST" ] || version_gt "$OTP_VERSION" "$CURRENT_LATEST"; then
+              jq ".latest_${MAJOR_VERSION} = \"${OTP_VERSION}\"" versions.json > versions.json.tmp
+              mv versions.json.tmp versions.json
+            fi
+
+            # Update overall latest (highest version)
+            CURRENT_OVERALL=$(jq -r ".latest // \"\"" versions.json)
+            if [ -z "$CURRENT_OVERALL" ] || version_gt "$OTP_VERSION" "$CURRENT_OVERALL"; then
+              jq ".latest = \"${OTP_VERSION}\"" versions.json > versions.json.tmp
+              mv versions.json.tmp versions.json
+            fi
+
+            # Sort versions
+            jq '.versions |= (. | sort_by(. | split(".") | map(tonumber? // .)))' versions.json > versions.json.tmp
+            mv versions.json.tmp versions.json
           else
-            echo '{"versions": ["'"${OTP_VERSION}"'"], "latest": "'"${OTP_VERSION}"'"}' > versions.json
+            echo '{"versions": ["'"${OTP_VERSION}"'"], "latest": "'"${OTP_VERSION}"'", "latest_'"${MAJOR_VERSION}"'": "'"${OTP_VERSION}"'"}' > versions.json
           fi
           cp versions.json release/
+
+      - name: Commit versions.json to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Update versions.json for OTP ${OTP_VERSION}"
+            git pull --rebase origin main || true
+            git push origin HEAD:main
+          fi
 
       - name: List release artifacts
         run: ls -la release/

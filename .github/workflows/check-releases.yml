@@ -10,11 +10,6 @@ on:
         description: 'Force build a specific version (optional)'
         required: false
         type: string
-      include_prereleases:
-        description: 'Include release candidates'
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   check-releases:
@@ -31,7 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           FORCE_VERSION: ${{ inputs.force_version }}
-          INCLUDE_PRERELEASES: ${{ inputs.include_prereleases || 'true' }}
         run: |
           # Get our built versions
           if [ -f versions.json ]; then
@@ -49,32 +43,31 @@ jobs:
             exit 0
           fi
 
-          # Fetch releases from erlang/otp
-          RELEASES=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-' | head -50)
+          # Get ONLY the latest stable release for each major version (27, 28)
+          # Skip RCs, alphas, betas - only stable releases
+          LATEST_27=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-27\.' | grep -v -E '(rc|alpha|beta)' | head -1 | sed 's/OTP-//')
+          LATEST_28=$(gh api repos/erlang/otp/releases --paginate -q '.[].tag_name' | grep '^OTP-28\.' | grep -v -E '(rc|alpha|beta)' | head -1 | sed 's/OTP-//')
+
+          echo "Latest OTP 27: $LATEST_27"
+          echo "Latest OTP 28: $LATEST_28"
 
           NEW_VERSIONS=""
-          for TAG in $RELEASES; do
-            VERSION=${TAG#OTP-}
 
-            # Skip pre-releases if not enabled
-            if [ "$INCLUDE_PRERELEASES" != "true" ] && echo "$VERSION" | grep -qE '(rc|alpha|beta)'; then
-              continue
+          # Check if we need to build latest 27
+          if [ -n "$LATEST_27" ]; then
+            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_27"; then
+              echo "New version: $LATEST_27"
+              NEW_VERSIONS="$LATEST_27"
             fi
+          fi
 
-            # Only consider OTP 27+ versions
-            MAJOR=$(echo "$VERSION" | cut -d. -f1 | tr -cd '0-9')
-            if [ "$MAJOR" -lt 27 ] 2>/dev/null; then
-              continue
+          # Check if we need to build latest 28
+          if [ -n "$LATEST_28" ]; then
+            if ! echo "$BUILT_VERSIONS" | grep -qw "$LATEST_28"; then
+              echo "New version: $LATEST_28"
+              NEW_VERSIONS="$NEW_VERSIONS $LATEST_28"
             fi
-
-            # Check if we've already built this version
-            if echo "$BUILT_VERSIONS" | grep -qw "$VERSION"; then
-              echo "Already built: $VERSION"
-            else
-              echo "New version found: $VERSION"
-              NEW_VERSIONS="$NEW_VERSIONS $VERSION"
-            fi
-          done
+          fi
 
           NEW_VERSIONS=$(echo "$NEW_VERSIONS" | xargs)  # Trim whitespace
 
@@ -95,9 +88,6 @@ jobs:
           for VERSION in ${{ steps.check.outputs.new_versions }}; do
             echo "Triggering build for OTP $VERSION"
             gh workflow run build.yml -f otp_version="$VERSION"
-
-            # Wait a bit between triggers to avoid rate limiting
-            sleep 10
           done
 
       - name: Summary

@@ -1,55 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm">
-  <revision>1772093989</revision>
+  <revision>1772098210</revision>
   <data type="primary">
-    <checksum type="sha256">c308da88de627d8955baf31e174d0991111418a80db2914d5a5c69e8a494db8e</checksum>
-    <open-checksum type="sha256">b18789e7782bd7f1786f5b46ddcd90cd5c7bebbf2184856a9298e980142d19aa</open-checksum>
-    <location href="repodata/c308da88de627d8955baf31e174d0991111418a80db2914d5a5c69e8a494db8e-primary.xml.gz"/>
-    <timestamp>1772093989</timestamp>
-    <size>18698</size>
+    <checksum type="sha256">d45f2dd54248daa7f9148364f9a5ee99336fc8b724f635b62b16f6309d0b1d47</checksum>
+    <open-checksum type="sha256">76b4a2c39870f4300fcb0a7f532b0ebd0b0a98025703a021d96d2a64239bb633</open-checksum>
+    <location href="repodata/d45f2dd54248daa7f9148364f9a5ee99336fc8b724f635b62b16f6309d0b1d47-primary.xml.zst"/>
+    <timestamp>1772098210</timestamp>
+    <size>14801</size>
     <open-size>228404</open-size>
   </data>
   <data type="filelists">
-    <checksum type="sha256">2ffc53df5c513c1e69d430cc3bd79f2cf34f02da84dd46e410d0714935f6b856</checksum>
+    <checksum type="sha256">c0ff78357cc6a26fe238c50f163f8435f505b832c795b4253e97a72aee6282ce</checksum>
     <open-checksum type="sha256">b548623cfe1c450b2e0225fa354a65e78d8a51f287a1aac7377e121d6b8dc4d8</open-checksum>
-    <location href="repodata/2ffc53df5c513c1e69d430cc3bd79f2cf34f02da84dd46e410d0714935f6b856-filelists.xml.gz"/>
-    <timestamp>1772093989</timestamp>
-    <size>44346</size>
+    <location href="repodata/c0ff78357cc6a26fe238c50f163f8435f505b832c795b4253e97a72aee6282ce-filelists.xml.zst"/>
+    <timestamp>1772098210</timestamp>
+    <size>38007</size>
     <open-size>612869</open-size>
   </data>
   <data type="other">
-    <checksum type="sha256">a10f7145b84ade5755a9ac136a5ead8e906378a97067f7659b622e3a201c905f</checksum>
+    <checksum type="sha256">2912fde24edaad5333f1ae84c57eed7cfef91a6cae86fd09fab061ac1b69b773</checksum>
     <open-checksum type="sha256">4167b9cc57365ac48dae5f4386dec0c44df4aad6368302d2cd9cd19fa64ad17c</open-checksum>
-    <location href="repodata/a10f7145b84ade5755a9ac136a5ead8e906378a97067f7659b622e3a201c905f-other.xml.gz"/>
-    <timestamp>1772093989</timestamp>
-    <size>402</size>
+    <location href="repodata/2912fde24edaad5333f1ae84c57eed7cfef91a6cae86fd09fab061ac1b69b773-other.xml.zst"/>
+    <timestamp>1772098210</timestamp>
+    <size>403</size>
     <open-size>785</open-size>
-  </data>
-  <data type="primary_db">
-    <checksum type="sha256">747bc5afaf959a6bb5e77913c4a783127d51f4b57869a3fe0b1e616abb27133c</checksum>
-    <open-checksum type="sha256">b43ab98e3c97617a50ffe97b909b4fd424dc97d610086512ef3cc23b24dbf7c7</open-checksum>
-    <location href="repodata/747bc5afaf959a6bb5e77913c4a783127d51f4b57869a3fe0b1e616abb27133c-primary.sqlite.bz2"/>
-    <timestamp>1772093989</timestamp>
-    <size>60164</size>
-    <open-size>548864</open-size>
-    <database_version>10</database_version>
-  </data>
-  <data type="filelists_db">
-    <checksum type="sha256">75ba0da2042f79ff5e46c29094ff0c7813fd46bf0a255756c8d2db1f03260eac</checksum>
-    <open-checksum type="sha256">8d8761418c81d9c7a1ee8598031f00061882af1c2c34c172c70095953d15bdf4</open-checksum>
-    <location href="repodata/75ba0da2042f79ff5e46c29094ff0c7813fd46bf0a255756c8d2db1f03260eac-filelists.sqlite.bz2"/>
-    <timestamp>1772093989</timestamp>
-    <size>38021</size>
-    <open-size>266240</open-size>
-    <database_version>10</database_version>
-  </data>
-  <data type="other_db">
-    <checksum type="sha256">8d75cff3025d5a140fb70c27cb4e8009ab5c9e0105f41fdafc13728ea20ae2a7</checksum>
-    <open-checksum type="sha256">75ef4243ff898e4142d303517242c67780d97196cfea2a6ae4f15351eb9e04f2</open-checksum>
-    <location href="repodata/8d75cff3025d5a140fb70c27cb4e8009ab5c9e0105f41fdafc13728ea20ae2a7-other.sqlite.bz2"/>
-    <timestamp>1772093989</timestamp>
-    <size>885</size>
-    <open-size>24576</open-size>
-    <database_version>10</database_version>
   </data>
 </repomd>

@@ -209,18 +209,7 @@ jobs:
   # Test on macOS with tarball
   test-macos:
     needs: get-version
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-12
-            arch: x86_64
-            name: macOS Intel
-          - os: macos-14
-            arch: arm64
-            name: macOS Apple Silicon
-
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-14
 
     env:
       VERSION: ${{ needs.get-version.outputs.version }}
@@ -228,7 +217,7 @@ jobs:
     steps:
       - name: Download tarball
         run: |
-          curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-darwin-${{ matrix.arch }}.tar.gz" \
+          curl -fSL "https://github.com/${{ github.repository }}/releases/download/OTP-${VERSION}/erlang-${VERSION}-darwin-arm64.tar.gz" \
             -o erlang.tar.gz
 
       - name: Extract and install
@@ -274,7 +263,7 @@ jobs:
           echo "✓ Compilation works"
 
           echo ""
-          echo "All tests passed for ${{ matrix.name }}!"
+          echo "All tests passed for macOS ARM64!"
 
   # Summary job
   summary:

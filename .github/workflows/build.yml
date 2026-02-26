@@ -484,16 +484,7 @@ jobs:
   # macOS Builds
   # ====================
   build-macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-12
-            arch: x86_64
-          - os: macos-14
-            arch: arm64
-
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
@@ -529,16 +520,16 @@ jobs:
           cd otp_src
           make DESTDIR=$(pwd)/../install install
           cd ../install
-          tar czf ../erlang-${OTP_VERSION}-darwin-${{ matrix.arch }}.tar.gz .
+          tar czf ../erlang-${OTP_VERSION}-darwin-arm64.tar.gz .
 
       - name: Generate checksums
         run: |
-          shasum -a 256 erlang-${OTP_VERSION}-darwin-${{ matrix.arch }}.tar.gz > checksums-darwin-${{ matrix.arch }}.txt
+          shasum -a 256 erlang-${OTP_VERSION}-darwin-arm64.tar.gz > checksums-darwin-arm64.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: erlang-macos-${{ matrix.arch }}
+          name: erlang-macos-arm64
           path: |
             erlang-*.tar.gz
             checksums-*.txt

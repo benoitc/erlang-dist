@@ -1,0 +1,5 @@
+[erlang-dist]
+name=Erlang Distribution for cs9 - $basearch
+baseurl=https://benoitc.github.io/erlang-dist/rpm/cs9/$basearch
+enabled=1
+gpgcheck=0

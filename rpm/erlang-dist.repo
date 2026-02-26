@@ -1,5 +1,5 @@
 [erlang-dist]
 name=Erlang Distribution - $basearch
-baseurl=https://benoitc.github.io/erlang-dist/rpm/$basearch
+baseurl=https://benoitc.github.io/erlang-dist/rpm/$releasever/$basearch
 enabled=1
 gpgcheck=0

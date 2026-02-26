@@ -1,1 +1,101 @@
-# Erlang Distribution
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erlang/OTP Distribution</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --fg: #c9d1d9;
+            --accent: #58a6ff;
+            --border: #30363d;
+            --code-bg: #161b22;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h2 { color: var(--fg); margin-top: 2rem; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        code { font-family: 'SF Mono', Monaco, monospace; font-size: 0.9em; }
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 0.5rem;
+        }
+        table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+        th, td { border: 1px solid var(--border); padding: 0.5rem 1rem; text-align: left; }
+        th { background: var(--code-bg); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Erlang/OTP Distribution</h1>
+        <p>Pre-built Erlang/OTP binaries for multiple platforms.</p>
+
+        <p>
+            <span class="badge">OTP 28.3.2</span>
+            <span class="badge">OTP 27.2</span>
+        </p>
+
+        <h2>Quick Install</h2>
+        <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh</code></pre>
+
+        <p>Or specify a version:</p>
+        <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 28.3.2</code></pre>
+
+        <h2>APT Repository (Debian/Ubuntu)</h2>
+        <pre><code>echo "deb [trusted=yes] https://benoitc.github.io/erlang-dist/apt stable main" | \
+    sudo tee /etc/apt/sources.list.d/erlang-dist.list
+sudo apt update && sudo apt install erlang-28</code></pre>
+
+        <h2>YUM/DNF Repository (RHEL/Rocky/CentOS)</h2>
+        <pre><code>sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist.repo \
+    -o /etc/yum.repos.d/erlang-dist.repo
+sudo dnf install erlang-28</code></pre>
+
+        <h2>Supported Platforms</h2>
+        <table>
+            <tr><th>Platform</th><th>Versions</th><th>Architecture</th><th>Packages</th></tr>
+            <tr><td>Ubuntu</td><td>22.04, 24.04</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
+            <tr><td>Debian</td><td>11, 12</td><td>amd64</td><td>.deb, tarball</td></tr>
+            <tr><td>Rocky Linux</td><td>9</td><td>amd64</td><td>.rpm, tarball</td></tr>
+            <tr><td>CentOS Stream</td><td>9, 10</td><td>amd64</td><td>.rpm, tarball</td></tr>
+            <tr><td>macOS</td><td>14+</td><td>arm64</td><td>tarball</td></tr>
+        </table>
+
+        <h2>Downloads</h2>
+        <p>
+            <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a> ·
+            <a href="https://github.com/benoitc/erlang-dist">Source Code</a>
+        </p>
+
+        <h2>Direct Links</h2>
+        <ul>
+            <li><a href="install.sh">install.sh</a> - Universal installer script</li>
+            <li><a href="apt/">APT Repository</a></li>
+            <li><a href="rpm/">RPM Repository</a></li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -481,6 +481,206 @@ jobs:
             checksums-*.txt
 
   # ====================
+  # Linux ARM64 Builds (Rocky Linux via Docker + QEMU)
+  # ====================
+  build-rocky-arm64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build in Rocky Linux container (ARM64)
+        run: |
+          docker pull --platform linux/arm64 rockylinux:9
+          docker run --rm -t --platform linux/arm64 \
+            -v "$PWD:/src" -w /src \
+            -e OTP_VERSION=${OTP_VERSION} \
+            rockylinux:9 bash -lc '
+              set -euo pipefail
+
+              # Clean and refresh repos
+              dnf -y clean all
+              dnf -y makecache --refresh
+
+              # Enable CRB repo (needed for some devel packages)
+              dnf -y install dnf-plugins-core
+              dnf -y config-manager --set-enabled crb || true
+
+              # Install build dependencies (--allowerasing to handle curl-minimal conflict)
+              dnf -y install epel-release || true
+              dnf -y install --allowerasing \
+                gcc gcc-c++ make \
+                autoconf \
+                ncurses-devel \
+                openssl-devel \
+                mesa-libGL-devel \
+                mesa-libGLU-devel \
+                libpng-devel \
+                libssh-devel \
+                unixODBC-devel \
+                libxslt \
+                rpm-build \
+                perl \
+                tar \
+                curl
+              dnf -y install wxGTK3-devel fop || true
+
+              # Download OTP source
+              curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" \
+                -o otp_src.tar.gz
+              tar xzf otp_src.tar.gz
+              mv otp_src_${OTP_VERSION} otp_src
+
+              # Build OTP
+              cd otp_src
+              export ERL_TOP=$(pwd)
+              ./configure \
+                --prefix=/usr/local \
+                --enable-threads \
+                --enable-smp-support \
+                --enable-kernel-poll \
+                --enable-ssl \
+                --enable-dynamic-ssl-lib \
+                --with-ssl \
+                --enable-jit
+              make -j$(nproc)
+              make DESTDIR=$(pwd)/../install install
+
+              # Create tarball
+              cd ../install
+              tar czf ../erlang-${OTP_VERSION}-linux-arm64.tar.gz .
+              cd ..
+
+              # Build RPM
+              chmod +x scripts/build-rpm.sh
+              ./scripts/build-rpm.sh ${OTP_VERSION} arm64 rocky9
+              mv *.rpm erlang-${OTP_VERSION}-rocky9-arm64.rpm 2>/dev/null || true
+
+              # Generate checksums
+              sha256sum erlang-${OTP_VERSION}-linux-arm64.tar.gz > checksums-rocky9-arm64.txt
+              sha256sum *.rpm >> checksums-rocky9-arm64.txt 2>/dev/null || true
+            '
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-rocky9-arm64
+          path: |
+            erlang-*.tar.gz
+            *.rpm
+            checksums-*.txt
+
+  # ====================
+  # Linux ARM64 Builds (CentOS Stream via Docker + QEMU)
+  # ====================
+  build-centos-arm64:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: quay.io/centos/centos:stream9
+            distro: cs9
+          - image: quay.io/centos/centos:stream10-development
+            distro: cs10
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build in CentOS container (ARM64)
+        run: |
+          docker pull --platform linux/arm64 ${{ matrix.image }}
+          docker run --rm -t --platform linux/arm64 \
+            -v "$PWD:/src" -w /src \
+            -e OTP_VERSION=${OTP_VERSION} \
+            -e DISTRO=${{ matrix.distro }} \
+            ${{ matrix.image }} bash -lc '
+              set -euo pipefail
+
+              # Clean and refresh repos
+              dnf -y clean all
+              dnf -y makecache --refresh
+
+              # Enable CRB repo (needed for some devel packages)
+              dnf -y install dnf-plugins-core
+              dnf -y config-manager --set-enabled crb || true
+
+              # Install build dependencies (--allowerasing to handle curl-minimal conflict)
+              dnf -y install epel-release || true
+              dnf -y install --allowerasing \
+                gcc gcc-c++ make \
+                autoconf \
+                ncurses-devel \
+                openssl-devel \
+                mesa-libGL-devel \
+                mesa-libGLU-devel \
+                libpng-devel \
+                libssh-devel \
+                unixODBC-devel \
+                libxslt \
+                rpm-build \
+                perl \
+                tar \
+                curl
+              dnf -y install wxGTK3-devel fop || true
+
+              # Download OTP source
+              curl -fSL "https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz" \
+                -o otp_src.tar.gz
+              tar xzf otp_src.tar.gz
+              mv otp_src_${OTP_VERSION} otp_src
+
+              # Build OTP
+              cd otp_src
+              export ERL_TOP=$(pwd)
+              ./configure \
+                --prefix=/usr/local \
+                --enable-threads \
+                --enable-smp-support \
+                --enable-kernel-poll \
+                --enable-ssl \
+                --enable-dynamic-ssl-lib \
+                --with-ssl \
+                --enable-jit
+              make -j$(nproc)
+              make DESTDIR=$(pwd)/../install install
+
+              # Create tarball
+              cd ../install
+              tar czf ../erlang-${OTP_VERSION}-linux-arm64.tar.gz .
+              cd ..
+
+              # Build RPM
+              chmod +x scripts/build-rpm.sh
+              ./scripts/build-rpm.sh ${OTP_VERSION} arm64 ${DISTRO}
+              mv *.rpm erlang-${OTP_VERSION}-${DISTRO}-arm64.rpm 2>/dev/null || true
+
+              # Generate checksums
+              sha256sum erlang-${OTP_VERSION}-linux-arm64.tar.gz > checksums-${DISTRO}-arm64.txt
+              sha256sum *.rpm >> checksums-${DISTRO}-arm64.txt 2>/dev/null || true
+            '
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-${{ matrix.distro }}-arm64
+          path: |
+            erlang-*.tar.gz
+            *.rpm
+            checksums-*.txt
+
+  # ====================
   # macOS Builds
   # ====================
   build-macos:
@@ -538,7 +738,7 @@ jobs:
   # Create Release
   # ====================
   release:
-    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian-amd64, build-rocky-amd64, build-centos-amd64, build-macos]
+    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian-amd64, build-rocky-amd64, build-rocky-arm64, build-centos-amd64, build-centos-arm64, build-macos]
     if: ${{ !inputs.skip_release && always() && contains(needs.*.result, 'success') }}
     runs-on: ubuntu-latest
     permissions:
@@ -616,7 +816,6 @@ jobs:
             - Generic tarball
 
             **macOS:**
-            - Intel (x86_64) tarball
             - Apple Silicon (arm64) tarball
 
             ### Verification

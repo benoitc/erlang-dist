@@ -68,8 +68,8 @@ sudo tar xzf erlang.tar.gz -C /
 |----------|---------|--------------|---------------|
 | Ubuntu | 22.04, 24.04 | amd64, arm64 | .deb, tarball |
 | Debian | 11, 12 | amd64 | .deb, tarball |
-| Rocky Linux | 9 | amd64 | .rpm, tarball |
-| CentOS Stream | 9, 10 | amd64 | .rpm, tarball |
+| Rocky Linux | 9 | amd64, arm64 | .rpm, tarball |
+| CentOS Stream | 9, 10 | amd64, arm64 | .rpm, tarball |
 | macOS | 14+ | arm64 (Apple Silicon) | tarball |
 
 ## Available Versions

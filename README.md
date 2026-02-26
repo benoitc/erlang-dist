@@ -9,10 +9,10 @@ Pre-built Erlang/OTP binaries for multiple platforms, distributed via GitHub Rel
 curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh
 
 # Install specific version
-curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.0
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.2
 
 # Install to custom prefix
-curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.0 /opt/erlang
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.2 /opt/erlang
 ```
 
 ## Installation Methods
@@ -28,11 +28,8 @@ curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- [VERSION]
 ### APT Repository (Debian/Ubuntu)
 
 ```bash
-# Add GPG key
-curl -fsSL https://benoitc.github.io/erlang-dist/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/erlang-dist.gpg
-
-# Add repository
-echo "deb [signed-by=/usr/share/keyrings/erlang-dist.gpg] https://benoitc.github.io/erlang-dist/apt stable main" | \
+# Add repository (unsigned for now)
+echo "deb [trusted=yes] https://benoitc.github.io/erlang-dist/apt stable main" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
 
 # Install
@@ -56,10 +53,10 @@ Download tarballs directly from [GitHub Releases](https://github.com/benoitc/erl
 
 ```bash
 # Download
-curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.0/erlang-27.0-linux-amd64.tar.gz -o erlang.tar.gz
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.2/erlang-27.2-linux-amd64.tar.gz -o erlang.tar.gz
 
 # Verify checksum
-curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.0/SHA256SUMS | grep linux-amd64 | sha256sum -c
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.2/SHA256SUMS | grep linux-amd64 | sha256sum -c
 
 # Extract
 sudo tar xzf erlang.tar.gz -C /
@@ -70,16 +67,15 @@ sudo tar xzf erlang.tar.gz -C /
 | Platform | Version | Architecture | Package Types |
 |----------|---------|--------------|---------------|
 | Ubuntu | 22.04, 24.04 | amd64, arm64 | .deb, tarball |
-| Debian | 11, 12 | amd64, arm64 | .deb, tarball |
-| Rocky Linux | 9 | amd64, arm64 | .rpm, tarball |
-| CentOS Stream | 9, 10 | amd64, arm64 | .rpm, tarball |
-| macOS | 13+ | x86_64 | tarball |
-| macOS | 14+ | arm64 | tarball |
+| Debian | 11, 12 | amd64 | .deb, tarball |
+| Rocky Linux | 9 | amd64 | .rpm, tarball |
+| CentOS Stream | 9, 10 | amd64 | .rpm, tarball |
+| macOS | 14+ | arm64 (Apple Silicon) | tarball |
 
-## Supported Erlang Versions
+## Available Versions
 
-- **Erlang/OTP 27.x** (current stable)
-- **Erlang/OTP 28.x** (when released)
+- **Erlang/OTP 28.3.2** (latest)
+- **Erlang/OTP 27.2**
 
 Builds are automatically triggered when new releases are published on [erlang/otp](https://github.com/erlang/otp).
 
@@ -91,7 +87,7 @@ All builds include:
 - Kernel poll
 - SSL/TLS support (dynamically linked)
 - JIT compilation (where supported)
-- WxWidgets (for Observer and Debugger)
+- WxWidgets (when available)
 
 ## Verification
 
@@ -99,10 +95,10 @@ All releases include SHA256 checksums. Verify downloads with:
 
 ```bash
 # Linux
-sha256sum -c SHA256SUMS 2>/dev/null | grep erlang-27.0-linux-amd64.tar.gz
+sha256sum -c SHA256SUMS 2>/dev/null | grep erlang-27.2-linux-amd64.tar.gz
 
 # macOS
-shasum -a 256 -c SHA256SUMS 2>/dev/null | grep erlang-27.0-darwin-arm64.tar.gz
+shasum -a 256 -c SHA256SUMS 2>/dev/null | grep erlang-27.2-darwin-arm64.tar.gz
 ```
 
 ## Contributing

@@ -350,6 +350,28 @@ Size: 62155134
 SHA256: b37a795611e6f914bebce3c2b07a7a7ac97665df0911ab30c95e08040d0def29
 MD5sum: 142ab56e2c60c78887eea1de5ea9d7d1
 
+Package: erlang-28
+Version: 28.5.0.1
+Section: interpreters
+Priority: optional
+Architecture: arm64
+Installed-Size: 176132
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 28.5.0.1
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 28.5.0.1 pre-built binaries.
+Filename: pool/main/erlang-28.5.0.1-ubuntu2404-arm64.deb
+Size: 62157596
+SHA256: 17b6e3a35edcfd1b7b44e1056559aaad1030fef8b1ee35b65312b3597b894b46
+MD5sum: 1d8f704c3771038f95a9649f82e50a11
+
 Package: erlang-29
 Version: 29.0
 Section: interpreters

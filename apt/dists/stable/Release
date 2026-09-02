@@ -5,11 +5,11 @@ Codename: stable
 Architectures: amd64 arm64
 Components: main
 Description: Pre-built Erlang/OTP packages
-Date: Tue, 01 Sep 2026 18:28:52 +0000
+Date: Wed, 02 Sep 2026 00:50:08 +0000
 SHA256:
- b1fcea2cab9ac687d59a2bd927fc620267dd44bc768cdead67bc5ce2d32db40e    80556 main/binary-amd64/Packages
- c155ae437da516e193d068fbb78fd90bc9af53f756e78a831aba2842bad7551d     8842 main/binary-amd64/Packages.gz
- da1910a5ad0445741d999942d29b47927b486a232963274d5a66c6ae5bd1df45     7604 main/binary-amd64/Packages.xz
- 2825b77f38881059e6e7019b53a556e7896715567a4482c0497459d02969015a    20360 main/binary-arm64/Packages
- 35520a30be023422d83317e41670bdd66c44285b9d715346bf55d9f2a5f24fbf     2773 main/binary-arm64/Packages.gz
- a6078cd7eb1c2ec9619ef8368d8a1ca9706156959b6a6e7194ae53db8c1acaf9     2520 main/binary-arm64/Packages.xz
+ 7c1d8a6559491af4a7eff8d58fec8cb936f45b2d173678889b90f0d43fe02200    83680 main/binary-amd64/Packages
+ e9b64fa9cd21bc57133f02c27407a0dcb1435263be1fb2d0b2c3378c3b66117e     9156 main/binary-amd64/Packages.gz
+ 6639afde6beeea015ef35d25ad816b63f1327a7449c3cbc318282eaf02158feb     7868 main/binary-amd64/Packages.xz
+ acff8b1e4e296982b1481ea60d3396c4ff12ff42b6d3ebc53f5fbdfd442f77f9    21142 main/binary-arm64/Packages
+ f670483cb42f01cc9799b757cd89f5ee74de0bafe2a96e91cae617aa39bfd722     2861 main/binary-arm64/Packages.gz
+ ba18f1300f06ed50bf4f28fb4da47c39d45609cc6f3db8d6806a128ea2c6c8cb     2596 main/binary-arm64/Packages.xz

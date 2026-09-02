@@ -2264,3 +2264,91 @@ Size: 64274160
 SHA256: d72245a8bfad52f14e0ebeab4bb9e518877c1a83cb840dc8b20075f184387403
 MD5sum: e8075cc5254e84ed9542b35c2fc035af
 
+Package: erlang-29
+Version: 29.0.6
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 200364
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 29.0.6
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 29.0.6 pre-built binaries.
+Filename: pool/main/erlang-29.0.6-debian11-amd64.deb
+Size: 61134696
+SHA256: e5b71c4062148a7f64fd420696d76630541df395016db8e47e74c944889b1188
+MD5sum: d288cc73bb97ef22a733a2ef03adb682
+
+Package: erlang-29
+Version: 29.0.6
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 179300
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 29.0.6
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 29.0.6 pre-built binaries.
+Filename: pool/main/erlang-29.0.6-debian12-amd64.deb
+Size: 60835632
+SHA256: fc63729fc71d0eccbf3787f504ae5ce75af7b32c1b6c42f4ca208fc7114031fc
+MD5sum: 59fb98e037ed766c183d4df55a4d467c
+
+Package: erlang-29
+Version: 29.0.6
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 181620
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 29.0.6
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 29.0.6 pre-built binaries.
+Filename: pool/main/erlang-29.0.6-ubuntu2204-amd64.deb
+Size: 64747624
+SHA256: 846e4ccf30074a3f743b906e100f4a7096675b02316ba42d333de824de43dd21
+MD5sum: fbb1f18bbdc96d04d76f1f1da66fcf11
+
+Package: erlang-29
+Version: 29.0.6
+Section: interpreters
+Priority: optional
+Architecture: amd64
+Installed-Size: 181252
+Depends: libc6, libncurses6 | libncurses5, libssl3 | libssl1.1, zlib1g
+Recommends: libwxgtk3.2-1 | libwxgtk3.0-gtk3-0v5
+Suggests: erlang-doc
+Maintainer: Erlang Dist <erlang-dist@example.com>
+Homepage: https://www.erlang.org/
+Description: Erlang/OTP 29.0.6
+ Erlang is a programming language and runtime system for building
+ massively scalable soft real-time systems with requirements on
+ high availability.
+ .
+ This package provides Erlang/OTP version 29.0.6 pre-built binaries.
+Filename: pool/main/erlang-29.0.6-ubuntu2404-amd64.deb
+Size: 64307792
+SHA256: 93544ad20a1e1aa6d6b014e06d177394c1b23fc7d2d013dcb215064b7ae03a80
+MD5sum: e2ef7c1eeb05f9d0484da99df950f0ce
+

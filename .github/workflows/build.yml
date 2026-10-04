@@ -879,7 +879,7 @@ jobs:
       - name: Consolidate artifacts
         run: |
           mkdir -p release
-          find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*-darwin-*.tar.gz" -o -name "*-windows-*" \) -exec cp {} release/ \;
+          find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*-darwin-*.tar.gz" -o -name "*-windows-*.zip" -o -name "*-windows-*.exe" \) -exec cp {} release/ \;
 
           # Every Linux job builds a linux-<arch> tarball; ship the one built on the
           # oldest glibc (Ubuntu 22.04) so it runs on all supported distros

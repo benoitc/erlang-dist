@@ -67,6 +67,21 @@ sudo dnf install erlang-29-29.1
 
 The repodata is served from GitHub Pages; the packages are downloaded from the `OTP-<version>` releases.
 
+### Windows
+
+Each release includes the official Erlang/OTP x64 build: an installer (`.exe`) and a zip. Both are checked against the digests of the [erlang/otp](https://github.com/erlang/otp/releases) release.
+
+Run the installer, or unpack the zip anywhere; it runs from where you unpack it:
+
+```powershell
+$v = "29.1.1"
+Invoke-WebRequest "https://github.com/benoitc/erlang-dist/releases/download/OTP-$v/erlang-$v-windows-amd64.zip" -OutFile erlang.zip
+Expand-Archive erlang.zip -DestinationPath "$env:LOCALAPPDATA\erlang"
+& "$env:LOCALAPPDATA\erlang\bin\erl.exe"
+```
+
+Add `%LOCALAPPDATA%\erlang\bin` to your `PATH` to use `erl` from any shell.
+
 ### Manual Download
 
 Download tarballs directly from [GitHub Releases](https://github.com/benoitc/erlang-dist/releases).
@@ -91,6 +106,7 @@ sudo tar xzf erlang.tar.gz -C /
 | Rocky Linux | 9, 10 | amd64, arm64 | .rpm, tarball |
 | CentOS Stream | 9, 10 | amd64, arm64 | .rpm, tarball |
 | macOS | 14+ | arm64 (Apple Silicon) | tarball |
+| Windows | 10, 11, Server | x64 | .exe installer, .zip |
 
 Notes:
 - Ubuntu 26.04, Debian 13, Rocky Linux 10 and Debian arm64 packages start with the releases built after 2026-10-04.

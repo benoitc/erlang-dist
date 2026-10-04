@@ -91,7 +91,7 @@ sudo tar xzf erlang.tar.gz -C /
 
 Notes:
 - Debian 11 reached end of life and is no longer built. Its packages, up to 29.0.6, stay available from `apt-debian11`.
-- Rocky Linux 9 packages stopped at 28.3.2 because of a broken mirror setting in the build, fixed since. Until newer versions are rebuilt, use `erlang-dist.repo`, which serves the CentOS Stream 9 builds.
+- Rocky Linux 9 has no packages for the releases between 28.3.2 and 28.5.0.7 (a broken mirror setting in the build, now fixed). 29.1.1, 28.5.0.7 and 27.3.4.11 and later releases are available.
 
 ## Available Versions
 

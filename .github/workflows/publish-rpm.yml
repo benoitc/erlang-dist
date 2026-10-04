@@ -109,7 +109,7 @@ jobs:
           done
           apt-ftparchive \
             -o APT::FTPArchive::Release::Origin=erlang-dist \
-            -o "APT::FTPArchive::Release::Label=MOVED - see https://github.com/${{ github.repository }}#apt-repository-debianubuntu" \
+            -o "APT::FTPArchive::Release::Label=MOVED - see https://${{ github.repository_owner }}.github.io/erlang-dist/#changes" \
             -o APT::FTPArchive::Release::Suite=stable \
             -o APT::FTPArchive::Release::Codename=stable \
             -o APT::FTPArchive::Release::Components=main \

@@ -1,128 +1,89 @@
 name: Publish RPM Repository
 
+# gh-pages only holds the repodata; package locations point at the
+# OTP-<version> release assets.
+
 on:
   repository_dispatch:
     types: [update-rpm]
   workflow_dispatch:
     inputs:
       otp_version:
-        description: 'OTP version to add (optional, will fetch all if empty)'
+        description: 'OTP version to add (latest release if empty)'
         required: false
         type: string
+      rebuild:
+        description: 'Rebuild the repodata from all OTP releases'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   pages: write
 
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
 jobs:
   publish-rpm:
-    runs-on: ubuntu-latest
-    container: fedora:latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Install dependencies
-        run: |
-          dnf install -y git createrepo_c curl jq
+      - uses: actions/checkout@v4
 
+      # Partial, sparse checkout: never fetch package blobs left in the gh-pages history
       - uses: actions/checkout@v4
         with:
           ref: gh-pages
-          fetch-depth: 0
+          path: site
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/*/
+            /rpm/*.repo
+            /rpm/*/*/repodata/
 
-      - name: Configure git safe directory
+      - name: Install dependencies
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          sudo apt-get update
+          sudo apt-get install -y createrepo-c
 
-      - name: Checkout main branch files
-        run: |
-          git fetch origin main
-          git checkout origin/main -- install.sh rpm/erlang-dist.repo versions.json 2>/dev/null || true
-
-      - name: Get OTP version
+      - name: Get OTP versions
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -n "${{ inputs.otp_version }}" ]; then
-            echo "version=${{ inputs.otp_version }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.rebuild }}" = "true" ]; then
+            VERSIONS=$(gh release list --limit 1000 --json tagName -q '.[].tagName' | grep '^OTP-' | sed 's/^OTP-//' | sort -V | tr '\n' ' ')
+          elif [ -n "${{ inputs.otp_version }}" ]; then
+            VERSIONS="${{ inputs.otp_version }}"
           elif [ -n "${{ github.event.client_payload.otp_version }}" ]; then
-            echo "version=${{ github.event.client_payload.otp_version }}" >> $GITHUB_OUTPUT
+            VERSIONS="${{ github.event.client_payload.otp_version }}"
           else
-            # Get latest version from releases
-            VERSION=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name' | sed 's/OTP-//')
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            VERSIONS=$(gh api repos/${{ github.repository }}/releases/latest -q '.tag_name' | sed 's/^OTP-//')
           fi
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
-      - name: Download .rpm packages
+      - name: Update RPM repodata
         env:
-          VERSION: ${{ steps.version.outputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p packages
+          FLAGS=""
+          [ "${{ inputs.rebuild }}" = "true" ] && FLAGS="--rebuild"
+          mkdir -p site/rpm
+          ./scripts/rpm-index.sh $FLAGS site/rpm ${{ steps.version.outputs.versions }}
 
-          # Download using curl since gh CLI may not be available
-          RELEASE_INFO=$(curl -fsSL "https://api.github.com/repos/${{ github.repository }}/releases/tags/OTP-${VERSION}")
-
-          # Download RPM files
-          echo "$RELEASE_INFO" | jq -r '.assets[] | select(.name | endswith(".rpm")) | .browser_download_url' | while read URL; do
-            curl -fsSL "$URL" -o "packages/$(basename "$URL")"
-          done
-
-          ls -la packages/
-
-      - name: Update RPM repository
+      - name: Update site files
         run: |
-          # Create directory structure per distro
+          cp install.sh versions.json pages/index.html site/
+          touch site/.nojekyll
+
           for DISTRO in rocky9 cs9 cs10; do
-            mkdir -p rpm/${DISTRO}/x86_64
-            mkdir -p rpm/${DISTRO}/aarch64
-          done
-
-          # Copy packages to appropriate distro/arch directories
-          for RPM in packages/*.rpm; do
-            [ -f "$RPM" ] || continue
-            BASENAME=$(basename "$RPM")
-
-            # Determine distro from filename
-            if [[ "$BASENAME" == *-rocky9-* ]]; then
-              DISTRO="rocky9"
-            elif [[ "$BASENAME" == *-cs9-* ]]; then
-              DISTRO="cs9"
-            elif [[ "$BASENAME" == *-cs10-* ]]; then
-              DISTRO="cs10"
-            else
-              echo "Unknown distro in $BASENAME, skipping"
-              continue
-            fi
-
-            # Determine arch from filename
-            if [[ "$BASENAME" == *amd64* ]] || [[ "$BASENAME" == *x86_64* ]]; then
-              ARCH="x86_64"
-            elif [[ "$BASENAME" == *arm64* ]] || [[ "$BASENAME" == *aarch64* ]]; then
-              ARCH="aarch64"
-            else
-              echo "Unknown arch in $BASENAME, skipping"
-              continue
-            fi
-
-            echo "Copying $BASENAME to rpm/${DISTRO}/${ARCH}/"
-            cp "$RPM" "rpm/${DISTRO}/${ARCH}/"
-          done
-
-          # Create/update repodata for each distro/arch
-          for DISTRO in rocky9 cs9 cs10; do
-            for ARCH in x86_64 aarch64; do
-              REPO_DIR="rpm/${DISTRO}/${ARCH}"
-              if [ -d "$REPO_DIR" ] && ls "$REPO_DIR"/*.rpm >/dev/null 2>&1; then
-                echo "Creating repodata for $REPO_DIR..."
-                createrepo_c --update "$REPO_DIR" || createrepo_c "$REPO_DIR"
-              fi
-            done
-          done
-
-          # Create repo files for each distro
-          for DISTRO in rocky9 cs9 cs10; do
-            cat > rpm/erlang-dist-${DISTRO}.repo << EOF
+            cat > site/rpm/erlang-dist-${DISTRO}.repo << EOF
           [erlang-dist]
           name=Erlang Distribution for ${DISTRO} - \$basearch
           baseurl=https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/${DISTRO}/\$basearch
@@ -131,41 +92,33 @@ jobs:
           EOF
           done
 
-          # Create auto-detect repo file
-          cat > rpm/erlang-dist.repo << 'REPOEOF'
-          [erlang-dist]
-          name=Erlang Distribution - $basearch
-          baseurl=https://benoitc.github.io/erlang-dist/rpm/$releasever/$basearch
-          enabled=1
-          gpgcheck=0
-          REPOEOF
+      - name: Drop package files from gh-pages
+        working-directory: site
+        run: |
+          git rm -r -q --cached --sparse --ignore-unmatch packages apt rpm/x86_64 rpm/aarch64
+          git ls-files -z -- '*.rpm' '*.deb' | xargs -0 -r git rm -q --cached --sparse --
 
       - name: Commit and push
+        working-directory: site
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add -A
           if ! git diff --staged --quiet; then
-            git commit -m "Update RPM repository for OTP ${{ steps.version.outputs.version }}"
-            # Pull with rebase to handle concurrent updates
-            git pull --rebase origin gh-pages || true
-            git push
+            git commit -m "Update RPM repository for OTP ${{ steps.version.outputs.versions }}"
+            git push origin HEAD:gh-pages
           fi
 
       - name: Summary
         run: |
           echo "## RPM Repository Updated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Added packages for OTP ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Indexed OTP ${{ steps.version.outputs.versions }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Installation" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo '# Rocky Linux 9' >> $GITHUB_STEP_SUMMARY
-          echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist-rocky9.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '# CentOS Stream 9' >> $GITHUB_STEP_SUMMARY
+          echo '# distro: rocky9, cs9, cs10' >> $GITHUB_STEP_SUMMARY
           echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo 'sudo dnf install erlang-27' >> $GITHUB_STEP_SUMMARY
+          echo 'sudo dnf install erlang-29' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

@@ -27,15 +27,20 @@ curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- [VERSION]
 
 ### APT Repository (Debian/Ubuntu)
 
+Each distro has its own index, stored on a release named `apt-<distro>`: `apt-ubuntu2204`, `apt-ubuntu2404`, `apt-debian11` or `apt-debian12`. The packages are downloaded from the `OTP-<version>` releases.
+
 ```bash
-# Add repository (unsigned for now)
-echo "deb [trusted=yes] https://benoitc.github.io/erlang-dist/apt stable main" | \
+# Add repository (unsigned for now), here for Ubuntu 24.04
+echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
 
-# Install
+# Install the latest 29.x, or pin a version
 sudo apt update
-sudo apt install erlang-27
+sudo apt install erlang-29
+sudo apt install erlang-29=29.1
 ```
+
+If you used the previous `https://benoitc.github.io/erlang-dist/apt stable main` line, replace it with the one above.
 
 ### YUM/DNF Repository (RHEL/Rocky/CentOS)
 
@@ -49,9 +54,12 @@ sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -
 # CentOS Stream 10
 sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs10.repo -o /etc/yum.repos.d/erlang-dist.repo
 
-# Install
-sudo dnf install erlang-27
+# Install the latest 29.x, or pin a version
+sudo dnf install erlang-29
+sudo dnf install erlang-29-29.1
 ```
+
+The repodata is served from GitHub Pages; the packages are downloaded from the `OTP-<version>` releases.
 
 ### Manual Download
 

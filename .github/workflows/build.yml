@@ -810,10 +810,59 @@ jobs:
             checksums-*.txt
 
   # ====================
+  # Windows (official Erlang/OTP x64 build, verified and tested)
+  # ====================
+  build-windows:
+    runs-on: windows-2025
+
+    steps:
+      - name: Download official Windows build
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="OTP-${OTP_VERSION}"
+          for EXT in zip exe; do
+            NAME="otp_win64_${OTP_VERSION}.${EXT}"
+            DIGEST=$(gh api "repos/erlang/otp/releases/tags/${TAG}" \
+              -q ".assets[] | select(.name == \"${NAME}\") | .digest" | sed 's/^sha256://')
+            if [ -z "$DIGEST" ]; then
+              echo "::error::${NAME} not found on erlang/otp ${TAG}"
+              exit 1
+            fi
+            curl -fSL "https://github.com/erlang/otp/releases/download/${TAG}/${NAME}" \
+              -o "erlang-${OTP_VERSION}-windows-amd64.${EXT}"
+            echo "${DIGEST}  erlang-${OTP_VERSION}-windows-amd64.${EXT}" | sha256sum -c
+          done
+
+      - name: Test the zip
+        shell: pwsh
+        run: |
+          Expand-Archive "erlang-$env:OTP_VERSION-windows-amd64.zip" -DestinationPath erl-test
+          $root = (Resolve-Path erl-test).Path
+          if (Test-Path "$root\Install.exe") { & "$root\Install.exe" -minimal $root | Out-Null }
+          & "$root\bin\erl.exe" -noshell -eval '{ok, _} = application:ensure_all_started(ssl), [{_, _, Lib}] = crypto:info_lib(), io:format("OTP ~s, ~s~n", [erlang:system_info(otp_release), Lib]), halt().'
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Generate checksums
+        shell: bash
+        run: |
+          sha256sum erlang-${OTP_VERSION}-windows-amd64.* > checksums-windows-amd64.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: erlang-windows-amd64
+          path: |
+            erlang-*-windows-amd64.zip
+            erlang-*-windows-amd64.exe
+            checksums-*.txt
+
+  # ====================
   # Create Release
   # ====================
   release:
-    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian, build-rocky-amd64, build-rocky-arm64, build-centos-amd64, build-centos-arm64, build-macos]
+    needs: [build-ubuntu-amd64, build-ubuntu-arm64, build-debian, build-rocky-amd64, build-rocky-arm64, build-centos-amd64, build-centos-arm64, build-macos, build-windows]
     if: ${{ !inputs.skip_release && always() && contains(needs.*.result, 'success') }}
     runs-on: ubuntu-latest
     permissions:
@@ -830,7 +879,7 @@ jobs:
       - name: Consolidate artifacts
         run: |
           mkdir -p release
-          find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*-darwin-*.tar.gz" \) -exec cp {} release/ \;
+          find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*-darwin-*.tar.gz" -o -name "*-windows-*" \) -exec cp {} release/ \;
 
           # Every Linux job builds a linux-<arch> tarball; ship the one built on the
           # oldest glibc (Ubuntu 22.04) so it runs on all supported distros
@@ -848,7 +897,7 @@ jobs:
       - name: Merge checksums
         run: |
           # Checksum the files actually shipped (each job builds its own tarball)
-          (cd release && sha256sum *.tar.gz *.deb *.rpm 2>/dev/null) > SHA256SUMS
+          (cd release && sha256sum *.tar.gz *.deb *.rpm *.zip *.exe 2>/dev/null) > SHA256SUMS
           mv SHA256SUMS release/
 
       - name: Update versions.json
@@ -929,6 +978,9 @@ jobs:
 
             **macOS:**
             - Apple Silicon (arm64) tarball
+
+            **Windows:**
+            - x64 installer (.exe) and zip, the official Erlang/OTP builds
 
             ### Verification
 

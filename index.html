@@ -46,6 +46,16 @@
         table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
         th, td { border: 1px solid var(--border); padding: 0.5rem 1rem; text-align: left; }
         th { background: var(--code-bg); }
+        .notice {
+            border: 1px solid #d29922;
+            border-left: 4px solid #d29922;
+            background: #1c1a12;
+            border-radius: 6px;
+            padding: 0.5rem 1.25rem 1rem;
+            margin: 1.5rem 0;
+        }
+        .notice h2 { margin-top: 0.75rem; color: #e3b341; }
+        .notice ul { padding-left: 1.25rem; }
     </style>
 </head>
 <body>
@@ -58,6 +68,21 @@
             <span class="badge">OTP 28</span>
             <span class="badge">OTP 27</span>
         </p>
+
+        <div class="notice" id="changes">
+            <h2>Repository changes (2026-10-04)</h2>
+            <p>Packages are now downloaded from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a>; this site only serves the repository indexes.</p>
+            <ul>
+                <li><strong>APT users: action required.</strong> The <code>https://benoitc.github.io/erlang-dist/apt stable main</code> repository is retired and <code>apt update</code> now fails with <code>changed its 'Label' value ... MOVED</code>. Replace your source line with the one for your distro (<code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>debian11</code>, <code>debian12</code>):
+<pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
+    sudo tee /etc/apt/sources.list.d/erlang-dist.list
+sudo apt update</code></pre></li>
+                <li><strong>RPM users: nothing to do.</strong> The <code>erlang-dist-rocky9.repo</code>, <code>erlang-dist-cs9.repo</code> and <code>erlang-dist-cs10.repo</code> files keep working. The generic <code>erlang-dist.repo</code> now serves the CentOS Stream 9/10 builds for any EL9/EL10 system; download it again if you use it.</li>
+                <li><strong>All versions stay installable.</strong> Older releases are no longer dropped; pin one with <code>apt install erlang-29=29.1</code> or <code>dnf install erlang-29-29.1</code>.</li>
+                <li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
+                <li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
+            </ul>
+        </div>
 
         <h2>Quick Install</h2>
         <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh</code></pre>

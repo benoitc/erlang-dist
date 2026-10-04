@@ -82,6 +82,9 @@ sudo apt update</code></pre></li>
                 <li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
                 <li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
                 <li><strong>New platforms:</strong> Ubuntu 26.04, Debian 13, Rocky Linux 10, and arm64 for Debian and Ubuntu 22.04.</li>
+                <li><strong>macOS:</strong> the build now includes OpenSSL 3.5, so <code>crypto</code> and <code>ssl</code> work without Homebrew's <code>openssl@3</code>.</li>
+                <li><strong>Installer fixed:</strong> <code>install.sh</code> downloaded from a wrong URL and installed into the wrong directory. It now works, including with a custom prefix:
+<pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1 $HOME/.local/erlang</code></pre></li>
             </ul>
         </div>
 

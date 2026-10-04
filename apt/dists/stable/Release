@@ -1,27 +1,27 @@
 Architectures: amd64 arm64
 Codename: stable
 Components: main
-Date: Sun, 04 Oct 2026 17:22:21 +0000
+Date: Sun, 04 Oct 2026 17:24:16 +0000
 Label: MOVED - see https://benoitc.github.io/erlang-dist/#changes
 Origin: erlang-dist
 Suite: stable
 MD5Sum:
  d41d8cd98f00b204e9800998ecf8427e                0 main/binary-amd64/Packages
- 109aac0df05b6bfb2ef8f03e1991efbd               29 main/binary-amd64/Packages.gz
+ 7c046f1bf03ec48968d199a9882b5960               29 main/binary-amd64/Packages.gz
  d41d8cd98f00b204e9800998ecf8427e                0 main/binary-arm64/Packages
- 109aac0df05b6bfb2ef8f03e1991efbd               29 main/binary-arm64/Packages.gz
+ 7c046f1bf03ec48968d199a9882b5960               29 main/binary-arm64/Packages.gz
 SHA1:
  da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-amd64/Packages
- 8a9225b626fc28bedf7d57979ee8999f7fa851fd               29 main/binary-amd64/Packages.gz
+ 103093a6338a1522854a31081b3ad2edb1c6cc08               29 main/binary-amd64/Packages.gz
  da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-arm64/Packages
- 8a9225b626fc28bedf7d57979ee8999f7fa851fd               29 main/binary-arm64/Packages.gz
+ 103093a6338a1522854a31081b3ad2edb1c6cc08               29 main/binary-arm64/Packages.gz
 SHA256:
  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-amd64/Packages
- 0c5eced22926642fee188263b32561bc0e5dac19cb0884cdf41c9274d85c83ff               29 main/binary-amd64/Packages.gz
+ fff5503aa9a95f4f4aebb6f5a29833d4e00edbf7cbbebdf41691416dfb574c34               29 main/binary-amd64/Packages.gz
  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-arm64/Packages
- 0c5eced22926642fee188263b32561bc0e5dac19cb0884cdf41c9274d85c83ff               29 main/binary-arm64/Packages.gz
+ fff5503aa9a95f4f4aebb6f5a29833d4e00edbf7cbbebdf41691416dfb574c34               29 main/binary-arm64/Packages.gz
 SHA512:
  cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e                0 main/binary-amd64/Packages
- c20641e12b3f94bd17b96ed8a2b2cfdd6e3a2fc2114ea6de02fe4fdd0d64f06fc01fe082c0d4ab723cac6a319edf3c14b422258426481576f94815c417b9c945               29 main/binary-amd64/Packages.gz
+ 67f2e58b91250cab04df429a56b71efa8ff97f041191ce2fe468591b3d0672564d962c49623f3b66dfbffbef5ba164dfd5837d91c69d4f66828c90cd1ff543a3               29 main/binary-amd64/Packages.gz
  cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e                0 main/binary-arm64/Packages
- c20641e12b3f94bd17b96ed8a2b2cfdd6e3a2fc2114ea6de02fe4fdd0d64f06fc01fe082c0d4ab723cac6a319edf3c14b422258426481576f94815c417b9c945               29 main/binary-arm64/Packages.gz
+ 67f2e58b91250cab04df429a56b71efa8ff97f041191ce2fe468591b3d0672564d962c49623f3b66dfbffbef5ba164dfd5837d91c69d4f66828c90cd1ff543a3               29 main/binary-arm64/Packages.gz

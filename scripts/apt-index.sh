@@ -24,7 +24,7 @@ export GH_REPO
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-DISTROS="ubuntu2204 ubuntu2404 debian11 debian12"
+DISTROS="ubuntu2204 ubuntu2404 ubuntu2604 debian11 debian12 debian13"
 
 for DISTRO in $DISTROS; do
     mkdir -p "$WORK/$DISTRO"

@@ -27,7 +27,7 @@ curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- [VERSION]
 
 ### APT Repository (Debian/Ubuntu)
 
-Each distro has its own index, stored on a release named `apt-<distro>`: `apt-ubuntu2204`, `apt-ubuntu2404`, `apt-debian11` or `apt-debian12`. The packages are downloaded from the `OTP-<version>` releases.
+Each distro has its own index, stored on a release named `apt-<distro>`: `apt-ubuntu2204`, `apt-ubuntu2404`, `apt-ubuntu2604`, `apt-debian11`, `apt-debian12` or `apt-debian13`. The packages are downloaded from the `OTP-<version>` releases.
 
 ```bash
 # Add repository (unsigned for now), here for Ubuntu 24.04
@@ -47,6 +47,9 @@ If you used the previous `https://benoitc.github.io/erlang-dist/apt stable main`
 ```bash
 # Rocky Linux 9
 sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-rocky9.repo -o /etc/yum.repos.d/erlang-dist.repo
+
+# Rocky Linux 10
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-rocky10.repo -o /etc/yum.repos.d/erlang-dist.repo
 
 # CentOS Stream 9
 sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -o /etc/yum.repos.d/erlang-dist.repo
@@ -83,13 +86,14 @@ sudo tar xzf erlang.tar.gz -C /
 
 | Platform | Version | Architecture | Package Types |
 |----------|---------|--------------|---------------|
-| Ubuntu | 22.04, 24.04 | amd64, arm64 | .deb, tarball |
-| Debian | 12 (11: no new builds) | amd64 | .deb, tarball |
-| Rocky Linux | 9 | amd64, arm64 | .rpm, tarball |
+| Ubuntu | 22.04, 24.04, 26.04 | amd64, arm64 | .deb, tarball |
+| Debian | 12, 13 (11: no new builds) | amd64, arm64 | .deb, tarball |
+| Rocky Linux | 9, 10 | amd64, arm64 | .rpm, tarball |
 | CentOS Stream | 9, 10 | amd64, arm64 | .rpm, tarball |
 | macOS | 14+ | arm64 (Apple Silicon) | tarball |
 
 Notes:
+- Ubuntu 26.04, Debian 13, Rocky Linux 10 and Debian arm64 packages start with the releases built after 2026-10-04.
 - Debian 11 reached end of life and is no longer built. Its packages, up to 29.0.6, stay available from `apt-debian11`.
 - Rocky Linux 9 has no packages for the releases between 28.3.2 and 28.5.0.7 (a broken mirror setting in the build, now fixed). 29.1.1, 28.5.0.7 and 27.3.4.11 and later releases are available.
 

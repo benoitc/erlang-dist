@@ -117,7 +117,7 @@ jobs:
             release $D > "$RUNNER_TEMP/Release"
           mv "$RUNNER_TEMP/Release" $D/Release
 
-          for DISTRO in rocky9 cs9 cs10; do
+          for DISTRO in rocky9 rocky10 cs9 cs10; do
             cat > site/rpm/erlang-dist-${DISTRO}.repo << EOF
           [erlang-dist]
           name=Erlang Distribution for ${DISTRO} - \$basearch
@@ -153,7 +153,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Installation" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo '# distro: rocky9, cs9, cs10' >> $GITHUB_STEP_SUMMARY
+          echo '# distro: rocky9, rocky10, cs9, cs10' >> $GITHUB_STEP_SUMMARY
           echo 'sudo curl -fsSL https://${{ github.repository_owner }}.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -o /etc/yum.repos.d/erlang-dist.repo' >> $GITHUB_STEP_SUMMARY
           echo 'sudo dnf install erlang-29' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

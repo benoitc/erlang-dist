@@ -26,7 +26,7 @@ BASEURL="https://github.com/${GH_REPO}/releases/download/"
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
-DISTROS="rocky9 cs9 cs10"
+DISTROS="rocky9 rocky10 cs9 cs10"
 ARCHS="x86_64 aarch64"
 
 decompress() {
@@ -68,6 +68,7 @@ for VERSION in "$@"; do
     for NAME in $ASSETS; do
         case "$NAME" in
             *-rocky9-*) DISTRO=rocky9 ;;
+            *-rocky10-*) DISTRO=rocky10 ;;
             *-cs9-*) DISTRO=cs9 ;;
             *-cs10-*) DISTRO=cs10 ;;
             *) echo "Unknown distro in $NAME, skipping"; continue ;;

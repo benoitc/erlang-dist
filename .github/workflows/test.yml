@@ -49,8 +49,12 @@ jobs:
             distro: ubuntu2204
           - image: ubuntu:24.04
             distro: ubuntu2404
+          - image: ubuntu:26.04
+            distro: ubuntu2604
           - image: debian:12
             distro: debian12
+          - image: debian:13
+            distro: debian13
 
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}

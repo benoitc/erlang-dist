@@ -73,14 +73,15 @@
             <h2>Repository changes (2026-10-04)</h2>
             <p>Packages are now downloaded from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a>; this site only serves the repository indexes.</p>
             <ul>
-                <li><strong>APT users: action required.</strong> The <code>https://benoitc.github.io/erlang-dist/apt stable main</code> repository is retired and <code>apt update</code> now fails with <code>changed its 'Label' value ... MOVED</code>. Replace your source line with the one for your distro (<code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>debian11</code>, <code>debian12</code>):
+                <li><strong>APT users: action required.</strong> The <code>https://benoitc.github.io/erlang-dist/apt stable main</code> repository is retired and <code>apt update</code> now fails with <code>changed its 'Label' value ... MOVED</code>. Replace your source line with the one for your distro (<code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code>, <code>debian13</code>):
 <pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
 sudo apt update</code></pre></li>
-                <li><strong>RPM users: nothing to do.</strong> The <code>erlang-dist-rocky9.repo</code>, <code>erlang-dist-cs9.repo</code> and <code>erlang-dist-cs10.repo</code> files keep working. The generic <code>erlang-dist.repo</code> now serves the CentOS Stream 9/10 builds for any EL9/EL10 system; download it again if you use it.</li>
+                <li><strong>RPM users: nothing to do.</strong> The <code>erlang-dist-rocky9.repo</code>, <code>erlang-dist-rocky10.repo</code>, <code>erlang-dist-cs9.repo</code> and <code>erlang-dist-cs10.repo</code> files keep working. The generic <code>erlang-dist.repo</code> now serves the CentOS Stream 9/10 builds for any EL9/EL10 system; download it again if you use it.</li>
                 <li><strong>All versions stay installable.</strong> Older releases are no longer dropped; pin one with <code>apt install erlang-29=29.1</code> or <code>dnf install erlang-29-29.1</code>.</li>
                 <li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
                 <li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
+                <li><strong>New platforms:</strong> Ubuntu 26.04, Debian 13, Rocky Linux 10, and arm64 for Debian and Ubuntu 22.04.</li>
             </ul>
         </div>
 
@@ -91,13 +92,13 @@ sudo apt update</code></pre></li>
         <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1</code></pre>
 
         <h2>APT Repository (Debian/Ubuntu)</h2>
-        <p>Pick your distro: <code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>debian11</code> or <code>debian12</code>.</p>
+        <p>Pick your distro: <code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code> or <code>debian13</code>.</p>
         <pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
 sudo apt update && sudo apt install erlang-29</code></pre>
 
         <h2>YUM/DNF Repository (RHEL/Rocky/CentOS)</h2>
-        <p>Pick your distro: <code>rocky9</code>, <code>cs9</code> or <code>cs10</code>.</p>
+        <p>Pick your distro: <code>rocky9</code>, <code>rocky10</code>, <code>cs9</code> or <code>cs10</code>.</p>
         <pre><code>sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo \
     -o /etc/yum.repos.d/erlang-dist.repo
 sudo dnf install erlang-29</code></pre>
@@ -105,10 +106,10 @@ sudo dnf install erlang-29</code></pre>
         <h2>Supported Platforms</h2>
         <table>
             <tr><th>Platform</th><th>Versions</th><th>Architecture</th><th>Packages</th></tr>
-            <tr><td>Ubuntu</td><td>22.04, 24.04</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
-            <tr><td>Debian</td><td>12 (11: no new builds)</td><td>amd64</td><td>.deb, tarball</td></tr>
-            <tr><td>Rocky Linux</td><td>9</td><td>amd64</td><td>.rpm, tarball</td></tr>
-            <tr><td>CentOS Stream</td><td>9, 10</td><td>amd64</td><td>.rpm, tarball</td></tr>
+            <tr><td>Ubuntu</td><td>22.04, 24.04, 26.04</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
+            <tr><td>Debian</td><td>12, 13 (11: no new builds)</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
+            <tr><td>Rocky Linux</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
+            <tr><td>CentOS Stream</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
             <tr><td>macOS</td><td>14+</td><td>arm64</td><td>tarball</td></tr>
         </table>
 

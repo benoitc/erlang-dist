@@ -69,7 +69,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Installation" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo '# distro: ubuntu2204, ubuntu2404, debian11, debian12' >> $GITHUB_STEP_SUMMARY
+          echo '# distro: ubuntu2204, ubuntu2404, ubuntu2604, debian11, debian12, debian13' >> $GITHUB_STEP_SUMMARY
           echo 'echo "deb [trusted=yes] https://github.com/${{ github.repository }}/releases/download/ apt-ubuntu2404/" | sudo tee /etc/apt/sources.list.d/erlang-dist.list' >> $GITHUB_STEP_SUMMARY
           echo 'sudo apt update && sudo apt install erlang-29' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

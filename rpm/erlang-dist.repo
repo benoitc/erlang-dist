@@ -1,0 +1,10 @@
+# Generic repository: el9 serves the CentOS Stream 9 builds, el10 the
+# CentOS Stream 10 builds. Distro-specific files are erlang-dist-<distro>.repo.
+[erlang-dist]
+name=Erlang Distribution - EL$releasever $basearch
+baseurl=https://benoitc.github.io/erlang-dist/rpm/el$releasever/$basearch
+enabled=1
+gpgcheck=0
+# Uncomment when GPG signing is enabled:
+# gpgcheck=1
+# gpgkey=https://benoitc.github.io/erlang-dist/gpg.key

@@ -718,13 +718,38 @@ jobs:
     runs-on: macos-15
     env:
       MACOSX_DEPLOYMENT_TARGET: "14.0"
+      # OpenSSL is linked statically so crypto does not depend on Homebrew
+      OPENSSL_VERSION: "3.5.9"
+      OPENSSL_SHA256: "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a"
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
         run: |
-          brew install autoconf openssl@3 wxwidgets fop
+          brew install autoconf wxwidgets fop
+
+      - name: Cache OpenSSL
+        id: openssl-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/openssl
+          key: openssl-${{ env.OPENSSL_VERSION }}-macos${{ env.MACOSX_DEPLOYMENT_TARGET }}-arm64
+
+      - name: Build static OpenSSL
+        if: steps.openssl-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL "https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz" \
+            -o openssl.tar.gz
+          echo "${OPENSSL_SHA256}  openssl.tar.gz" | shasum -a 256 -c
+          tar xzf openssl.tar.gz
+          cd openssl-${OPENSSL_VERSION}
+          # No config file is shipped; point OPENSSLDIR at a path nothing else uses
+          ./Configure darwin64-arm64-cc no-shared no-tests no-docs \
+            --prefix=${{ runner.temp }}/openssl \
+            --openssldir=/usr/local/lib/erlang/ssl
+          make -j$(sysctl -n hw.ncpu) build_libs
+          make install_dev
 
       - name: Download OTP source
         run: |
@@ -743,8 +768,8 @@ jobs:
             --enable-smp-support \
             --enable-kernel-poll \
             --enable-ssl \
-            --enable-dynamic-ssl-lib \
-            --with-ssl=$(brew --prefix openssl@3) \
+            --disable-dynamic-ssl-lib \
+            --with-ssl=${{ runner.temp }}/openssl \
             --enable-jit
           make -j$(sysctl -n hw.ncpu)
 
@@ -754,6 +779,23 @@ jobs:
           make DESTDIR=$(pwd)/../install install
           cd ../install
           tar czf ../erlang-${OTP_VERSION}-darwin-arm64.tar.gz .
+
+      - name: Check for Homebrew dependencies
+        run: |
+          # Every binary must only link macOS system libraries
+          BAD=$(find install -type f \( -name '*.so' -o -perm -u+x \) -print0 \
+            | xargs -0 otool -L 2>/dev/null \
+            | grep -E '/opt/homebrew|/usr/local/(opt|Cellar)' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::Build links Homebrew libraries:"
+            echo "$BAD"
+            exit 1
+          fi
+          ERL_ROOTDIR=$PWD/install/usr/local/lib/erlang install/usr/local/lib/erlang/bin/erl -noshell -eval '
+            {ok, _} = application:ensure_all_started(ssl),
+            [{_, _, Lib}] = crypto:info_lib(),
+            io:format("crypto: ~s~n", [Lib]),
+            halt().'
 
       - name: Generate checksums
         run: |

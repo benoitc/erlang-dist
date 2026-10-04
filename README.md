@@ -115,7 +115,7 @@ All builds include:
 - Thread support
 - SMP support
 - Kernel poll
-- SSL/TLS support (dynamically linked)
+- SSL/TLS support: Linux packages use the distro's OpenSSL; the macOS build includes OpenSSL 3.5 (statically linked), so it needs nothing from Homebrew
 - JIT compilation (where supported)
 - WxWidgets (when available)
 

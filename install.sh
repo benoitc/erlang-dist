@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-REPO_OWNER="${ERLANG_DIST_OWNER:-USER}"
+REPO_OWNER="${ERLANG_DIST_OWNER:-benoitc}"
 REPO_NAME="${ERLANG_DIST_REPO:-erlang-dist}"
 DEFAULT_VERSION=""
 DEFAULT_PREFIX="/usr/local"
@@ -173,7 +173,8 @@ main() {
     verify_checksum "$TMPDIR/$TARBALL" "$EXPECTED_CHECKSUM"
     success "Checksum verified"
 
-    # Check if we need sudo
+    # Check if we need sudo (create the prefix first when we can)
+    mkdir -p "$PREFIX" 2>/dev/null || true
     if [ ! -w "$PREFIX" ]; then
         if command -v sudo >/dev/null 2>&1; then
             SUDO="sudo"
@@ -189,8 +190,11 @@ main() {
     # Create prefix if it doesn't exist
     $SUDO mkdir -p "$PREFIX"
 
-    # Extract tarball
-    $SUDO tar xzf "$TMPDIR/$TARBALL" -C "$PREFIX" --strip-components=2
+    # Extract tarball (entries are ./usr/local/...)
+    $SUDO tar xzf "$TMPDIR/$TARBALL" -C "$PREFIX" --strip-components=3
+
+    # The launcher scripts are built for /usr/local; point them at $PREFIX
+    $SUDO "$PREFIX/lib/erlang/Install" -minimal "$PREFIX/lib/erlang" >/dev/null
 
     success "Erlang/OTP $VERSION installed successfully!"
 

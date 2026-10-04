@@ -1,0 +1,5 @@
+[erlang-dist]
+name=Erlang Distribution for rocky10 - $basearch
+baseurl=https://benoitc.github.io/erlang-dist/rpm/rocky10/$basearch
+enabled=1
+gpgcheck=0

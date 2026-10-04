@@ -82,6 +82,7 @@ sudo apt update</code></pre></li>
                 <li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
                 <li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
                 <li><strong>New platforms:</strong> Ubuntu 26.04, Debian 13, Rocky Linux 10, and arm64 for Debian and Ubuntu 22.04.</li>
+                <li><strong>Windows:</strong> releases now include the official Erlang/OTP x64 installer and zip.</li>
                 <li><strong>macOS:</strong> the build now includes OpenSSL 3.5, so <code>crypto</code> and <code>ssl</code> work without Homebrew's <code>openssl@3</code>.</li>
                 <li><strong>Installer fixed:</strong> <code>install.sh</code> downloaded from a wrong URL and installed into the wrong directory. It now works, including with a custom prefix:
 <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1 $HOME/.local/erlang</code></pre></li>
@@ -106,6 +107,13 @@ sudo apt update && sudo apt install erlang-29</code></pre>
     -o /etc/yum.repos.d/erlang-dist.repo
 sudo dnf install erlang-29</code></pre>
 
+        <h2>Windows</h2>
+        <p>Each release includes the official Erlang/OTP x64 installer (<code>.exe</code>) and zip, checked against the erlang/otp release digests.</p>
+        <pre><code>$v = "29.1.1"
+Invoke-WebRequest "https://github.com/benoitc/erlang-dist/releases/download/OTP-$v/erlang-$v-windows-amd64.zip" -OutFile erlang.zip
+Expand-Archive erlang.zip -DestinationPath "$env:LOCALAPPDATA\erlang"
+&amp; "$env:LOCALAPPDATA\erlang\bin\erl.exe"</code></pre>
+
         <h2>Supported Platforms</h2>
         <table>
             <tr><th>Platform</th><th>Versions</th><th>Architecture</th><th>Packages</th></tr>
@@ -114,6 +122,7 @@ sudo dnf install erlang-29</code></pre>
             <tr><td>Rocky Linux</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
             <tr><td>CentOS Stream</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
             <tr><td>macOS</td><td>14+</td><td>arm64</td><td>tarball</td></tr>
+            <tr><td>Windows</td><td>10, 11, Server</td><td>x64</td><td>.exe installer, .zip</td></tr>
         </table>
 
         <h2>Downloads</h2>

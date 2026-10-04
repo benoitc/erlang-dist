@@ -204,8 +204,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: debian:11
-            distro: debian11
+          # Debian 11 is end of life: no new builds, existing packages stay in apt-debian11
           - container: debian:12
             distro: debian12
 
@@ -308,9 +307,6 @@ jobs:
             rockylinux:9 bash -lc '
               set -euo pipefail
 
-              # Use alternative Rocky Linux mirrors (fallback for mirror outages)
-              sed -i "s|^mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/rocky*.repo
-              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirrors.rit.edu/rocky|g" /etc/yum.repos.d/rocky*.repo
 
               # Clean and refresh repos
               dnf -y clean all
@@ -502,9 +498,6 @@ jobs:
             rockylinux:9 bash -lc '
               set -euo pipefail
 
-              # Use alternative Rocky Linux mirrors (fallback for mirror outages)
-              sed -i "s|^mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/rocky*.repo
-              sed -i "s|^#baseurl=http://dl.rockylinux.org|baseurl=https://mirrors.rit.edu/rocky|g" /etc/yum.repos.d/rocky*.repo
 
               # Clean and refresh repos
               dnf -y clean all
@@ -846,7 +839,7 @@ jobs:
 
             **Linux (amd64 & arm64):**
             - Ubuntu 22.04, 24.04 (.deb)
-            - Debian 11, 12 (.deb)
+            - Debian 12 (.deb)
             - Rocky Linux 9, CentOS Stream 9, 10 (.rpm)
             - Generic tarball
 

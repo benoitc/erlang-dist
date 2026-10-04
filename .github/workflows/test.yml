@@ -49,8 +49,6 @@ jobs:
             distro: ubuntu2204
           - image: ubuntu:24.04
             distro: ubuntu2404
-          - image: debian:11
-            distro: debian11
           - image: debian:12
             distro: debian12
 

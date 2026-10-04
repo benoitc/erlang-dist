@@ -9,10 +9,10 @@ Pre-built Erlang/OTP binaries for multiple platforms, distributed via GitHub Rel
 curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh
 
 # Install specific version
-curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.2
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1
 
 # Install to custom prefix
-curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 27.2 /opt/erlang
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1 /opt/erlang
 ```
 
 ## Installation Methods
@@ -40,7 +40,7 @@ sudo apt install erlang-29
 sudo apt install erlang-29=29.1
 ```
 
-If you used the previous `https://benoitc.github.io/erlang-dist/apt stable main` line, replace it with the one above.
+If you used the previous `https://benoitc.github.io/erlang-dist/apt stable main` line, `apt update` now fails with `changed its 'Label' value ... MOVED`. Replace the line with the one above.
 
 ### YUM/DNF Repository (RHEL/Rocky/CentOS)
 
@@ -70,10 +70,10 @@ Download tarballs directly from [GitHub Releases](https://github.com/benoitc/erl
 
 ```bash
 # Download
-curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.2/erlang-27.2-linux-amd64.tar.gz -o erlang.tar.gz
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-29.1.1/erlang-29.1.1-linux-amd64.tar.gz -o erlang.tar.gz
 
 # Verify checksum
-curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-27.2/SHA256SUMS | grep linux-amd64 | sha256sum -c
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-29.1.1/SHA256SUMS | grep linux-amd64 | sha256sum -c
 
 # Extract
 sudo tar xzf erlang.tar.gz -C /
@@ -84,22 +84,26 @@ sudo tar xzf erlang.tar.gz -C /
 | Platform | Version | Architecture | Package Types |
 |----------|---------|--------------|---------------|
 | Ubuntu | 22.04, 24.04 | amd64, arm64 | .deb, tarball |
-| Debian | 11, 12 | amd64 | .deb, tarball |
+| Debian | 12 (11: no new builds) | amd64 | .deb, tarball |
 | Rocky Linux | 9 | amd64, arm64 | .rpm, tarball |
 | CentOS Stream | 9, 10 | amd64, arm64 | .rpm, tarball |
 | macOS | 14+ | arm64 (Apple Silicon) | tarball |
 
+Notes:
+- Debian 11 reached end of life and is no longer built. Its packages, up to 29.0.6, stay available from `apt-debian11`.
+- Rocky Linux 9 packages stopped at 28.3.2 because of a broken mirror setting in the build, fixed since. Until newer versions are rebuilt, use `erlang-dist.repo`, which serves the CentOS Stream 9 builds.
+
 ## Available Versions
 
-**OTP 28 (current):**
-- 28.3.2 (latest)
-- 28.2, 28.1.1, 28.0.4
+The latest release of each tracked major version is built:
 
-**OTP 27 (LTS):**
-- 27.3.4.8 (latest)
-- 27.2.4, 27.1.3, 27.0.1
+| Major | Latest |
+|-------|--------|
+| OTP 29 | 29.1.1 |
+| OTP 28 | 28.5.0.7 |
+| OTP 27 | 27.3.4.11 |
 
-Builds are automatically triggered when new releases are published on [erlang/otp](https://github.com/erlang/otp). The latest patch version for each minor series is built and maintained.
+The full list is on [GitHub Releases](https://github.com/benoitc/erlang-dist/releases); every release stays installable from the APT and YUM repositories. Builds are triggered automatically when [erlang/otp](https://github.com/erlang/otp) publishes a new release of the two most recent major versions.
 
 ## Build Configuration
 
@@ -117,10 +121,10 @@ All releases include SHA256 checksums. Verify downloads with:
 
 ```bash
 # Linux
-sha256sum -c SHA256SUMS 2>/dev/null | grep erlang-27.2-linux-amd64.tar.gz
+sha256sum -c SHA256SUMS 2>/dev/null | grep erlang-29.1.1-linux-amd64.tar.gz
 
 # macOS
-shasum -a 256 -c SHA256SUMS 2>/dev/null | grep erlang-27.2-darwin-arm64.tar.gz
+shasum -a 256 -c SHA256SUMS 2>/dev/null | grep erlang-29.1.1-darwin-arm64.tar.gz
 ```
 
 ## Contributing

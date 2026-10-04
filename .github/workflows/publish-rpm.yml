@@ -45,12 +45,14 @@ jobs:
             /*
             !/*/
             /rpm/*.repo
+            /rpm/*/repodata/
             /rpm/*/*/repodata/
+            /apt/
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y createrepo-c
+          sudo apt-get install -y createrepo-c apt-utils
 
       - name: Get OTP versions
         id: version
@@ -83,8 +85,9 @@ jobs:
           cp rpm/erlang-dist.repo site/rpm/
           touch site/.nojekyll
 
-          # Generic erlang-dist.repo uses el$releasever: serve the CentOS Stream builds
-          for PAIR in el9:cs9 el10:cs10; do
+          # Generic erlang-dist.repo uses el$releasever: serve the CentOS Stream builds.
+          # Older generic .repo files used rpm/$releasever/$basearch and rpm/$basearch.
+          for PAIR in el9:cs9 el10:cs10 9:cs9 10:cs10 .:cs9; do
             for ARCH in x86_64 aarch64; do
               SRC="site/rpm/${PAIR#*:}/$ARCH/repodata"
               DST="site/rpm/${PAIR%:*}/$ARCH"
@@ -94,6 +97,25 @@ jobs:
               cp -r "$SRC" "$DST/"
             done
           done
+
+          # The old APT repository (apt stable main) is empty and its Label changed:
+          # apt update stops with an error showing where the repository moved.
+          D=site/apt/dists/stable
+          rm -rf site/apt
+          mkdir -p $D/main/binary-amd64 $D/main/binary-arm64
+          for A in amd64 arm64; do
+            : > $D/main/binary-$A/Packages
+            gzip -9kf $D/main/binary-$A/Packages
+          done
+          apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin=erlang-dist \
+            -o "APT::FTPArchive::Release::Label=MOVED - see https://github.com/${{ github.repository }}#apt-repository-debianubuntu" \
+            -o APT::FTPArchive::Release::Suite=stable \
+            -o APT::FTPArchive::Release::Codename=stable \
+            -o APT::FTPArchive::Release::Components=main \
+            -o "APT::FTPArchive::Release::Architectures=amd64 arm64" \
+            release $D > "$RUNNER_TEMP/Release"
+          mv "$RUNNER_TEMP/Release" $D/Release
 
           for DISTRO in rocky9 cs9 cs10; do
             cat > site/rpm/erlang-dist-${DISTRO}.repo << EOF
@@ -108,7 +130,7 @@ jobs:
       - name: Drop package files from gh-pages
         working-directory: site
         run: |
-          git rm -r -q --cached --sparse --ignore-unmatch packages apt rpm/x86_64 rpm/aarch64
+          git rm -r -q --cached --sparse --ignore-unmatch packages
           git ls-files -z -- '*.rpm' '*.deb' | xargs -0 -r git rm -q --cached --sparse --
 
       - name: Commit and push

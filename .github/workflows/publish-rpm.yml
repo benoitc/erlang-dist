@@ -80,7 +80,20 @@ jobs:
       - name: Update site files
         run: |
           cp install.sh versions.json pages/index.html site/
+          cp rpm/erlang-dist.repo site/rpm/
           touch site/.nojekyll
+
+          # Generic erlang-dist.repo uses el$releasever: serve the CentOS Stream builds
+          for PAIR in el9:cs9 el10:cs10; do
+            for ARCH in x86_64 aarch64; do
+              SRC="site/rpm/${PAIR#*:}/$ARCH/repodata"
+              DST="site/rpm/${PAIR%:*}/$ARCH"
+              [ -d "$SRC" ] || continue
+              rm -rf "$DST/repodata"
+              mkdir -p "$DST"
+              cp -r "$SRC" "$DST/"
+            done
+          done
 
           for DISTRO in rocky9 cs9 cs10; do
             cat > site/rpm/erlang-dist-${DISTRO}.repo << EOF

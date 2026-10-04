@@ -54,6 +54,9 @@ sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo -
 # CentOS Stream 10
 sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs10.repo -o /etc/yum.repos.d/erlang-dist.repo
 
+# Any EL9/EL10 distro (uses the CentOS Stream builds)
+sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist.repo -o /etc/yum.repos.d/erlang-dist.repo
+
 # Install the latest 29.x, or pin a version
 sudo dnf install erlang-29
 sudo dnf install erlang-29-29.1

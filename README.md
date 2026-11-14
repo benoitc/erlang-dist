@@ -153,4 +153,4 @@ To request a new platform or report issues, please open an issue on GitHub.
 
 ## License
 
-The distribution scripts in this repository are MIT licensed. Erlang/OTP itself is Apache 2.0 licensed.
+The distribution scripts in this repository are MIT licensed: see [LICENSE](LICENSE). The Erlang/OTP binaries it distributes are Apache 2.0 licensed, Copyright Ericsson AB, as published by the [erlang/otp](https://github.com/erlang/otp) project.

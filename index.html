@@ -1,141 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erlang/OTP Distribution</title>
-    <style>
-        :root {
-            --bg: #0d1117;
-            --fg: #c9d1d9;
-            --accent: #58a6ff;
-            --border: #30363d;
-            --code-bg: #161b22;
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--fg);
-            line-height: 1.6;
-            margin: 0;
-            padding: 2rem;
-        }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-        h2 { color: var(--fg); margin-top: 2rem; }
-        a { color: var(--accent); text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        pre {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 1rem;
-            overflow-x: auto;
-        }
-        code { font-family: 'SF Mono', Monaco, monospace; font-size: 0.9em; }
-        .badge {
-            display: inline-block;
-            background: var(--accent);
-            color: var(--bg);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-right: 0.5rem;
-        }
-        table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-        th, td { border: 1px solid var(--border); padding: 0.5rem 1rem; text-align: left; }
-        th { background: var(--code-bg); }
-        .notice {
-            border: 1px solid #d29922;
-            border-left: 4px solid #d29922;
-            background: #1c1a12;
-            border-radius: 6px;
-            padding: 0.5rem 1.25rem 1rem;
-            margin: 1.5rem 0;
-        }
-        .notice h2 { margin-top: 0.75rem; color: #e3b341; }
-        .notice ul { padding-left: 1.25rem; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>erlang-dist: prebuilt Erlang/OTP packages</title>
+<meta name="description" content="Prebuilt Erlang/OTP packages for Linux, macOS and Windows: an install script, APT and DNF repositories, tarballs and the official Windows build.">
+<link rel="icon" type="image/svg+xml" href="enki-logo.svg">
+<link rel="preload" href="archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css">
+<script src="site.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Erlang/OTP Distribution</h1>
-        <p>Pre-built Erlang/OTP binaries for multiple platforms.</p>
+<a class="skip" href="#install">Skip to installation</a>
 
-        <p>
-            <span class="badge">OTP 29</span>
-            <span class="badge">OTP 28</span>
-            <span class="badge">OTP 27</span>
-        </p>
+<header class="site-head">
+<div class="wrap head-row">
+<a class="name" href="./">erlang<span>-</span>dist</a>
+<nav class="head-nav" aria-label="Site">
+<a href="#install">Install</a>
+<a href="https://github.com/benoitc/erlang-dist/releases">Downloads</a>
+<a href="https://github.com/benoitc/erlang-dist">GitHub</a>
+</nav>
+</div>
+</header>
 
-        <div class="notice" id="changes">
-            <h2>Repository changes (2026-10-04)</h2>
-            <p>Packages are now downloaded from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a>; this site only serves the repository indexes.</p>
-            <ul>
-                <li><strong>APT users: action required.</strong> The <code>https://benoitc.github.io/erlang-dist/apt stable main</code> repository is retired and <code>apt update</code> now fails with <code>changed its 'Label' value ... MOVED</code>. Replace your source line with the one for your distro (<code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code>, <code>debian13</code>):
+<div class="notice" role="note">
+<div class="wrap"><p><strong>Repository changes (2026-10-04):</strong> APT users must update their source line; if <code>apt update</code> reports <code>changed its 'Label' value ... MOVED</code>, <a href="#changes">follow the migration instructions</a>.</p></div>
+</div>
+
+<main>
+<section class="hero">
+<div class="wrap">
+<h1>Erlang/OTP, <span class="accent">ready to install.</span></h1>
+<p class="lead">Prebuilt Erlang/OTP packages for Linux, macOS and Windows.</p>
+<div class="row">
+<a class="btn btn-ink" href="#install">Installation instructions</a>
+<a class="btn btn-out" href="https://github.com/benoitc/erlang-dist/releases">Browse releases</a>
+</div>
+<ul class="majors" aria-label="Tracked Erlang/OTP versions">
+<li data-major="29">OTP 29</li>
+<li data-major="28">OTP 28</li>
+<li data-major="27">OTP 27</li>
+</ul>
+<p class="attrib"><img src="enki-logo.svg" alt="" width="26" height="26"><span>Maintained by <a href="https://github.com/benoitc">Benoît Chesneau</a>. Sponsored by <a href="https://enki-multimedia.eu/">Enki Multimedia</a>.</span></p>
+</div>
+</section>
+
+<section class="block" id="install">
+<div class="wrap">
+<h2>Install</h2>
+<p>Pick your platform. Each section lists only the methods that work there.</p>
+<p class="note no-version">Commands that name a version use <code>X.Y.Z</code>: replace it with a release number from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a> or <a href="versions.json">versions.json</a>.</p>
+<p class="note js-only" hidden>Commands that name a version use the latest release, <code data-version>X.Y.Z</code>.</p>
+<ul class="platforms" aria-label="Platforms">
+<li><a href="#installer">Linux or macOS</a></li>
+<li><a href="#apt">Debian or Ubuntu</a></li>
+<li><a href="#dnf">RHEL, Rocky or CentOS</a></li>
+<li><a href="#windows">Windows</a></li>
+<li><a href="#manual">Manual download</a></li>
+</ul>
+
+<div class="method" id="installer">
+<p class="for">Linux (amd64, arm64) and macOS (Apple Silicon)</p>
+<h3>Install script</h3>
+<p>Detects your OS and architecture, downloads the matching tarball, verifies its checksum and extracts it to <code>/usr/local</code>, or to the prefix you give. It needs a Unix shell: on Windows, use the <a href="#windows">Windows build</a>.</p>
+<pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh</code></pre>
+<p>A specific version, or a custom prefix:</p>
+<pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- <span data-version>X.Y.Z</span>
+curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- <span data-version>X.Y.Z</span> $HOME/.local/erlang</code></pre>
+</div>
+
+<div class="method" id="apt">
+<p class="for">Ubuntu 22.04, 24.04, 26.04 and Debian 12, 13, on amd64 and arm64</p>
+<h3>APT repository</h3>
+<p>Pick your distro: <code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code> or <code>debian13</code>. This example is for Ubuntu 24.04:</p>
 <pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
     sudo tee /etc/apt/sources.list.d/erlang-dist.list
-sudo apt update</code></pre></li>
-                <li><strong>RPM users: nothing to do.</strong> The <code>erlang-dist-rocky9.repo</code>, <code>erlang-dist-rocky10.repo</code>, <code>erlang-dist-cs9.repo</code> and <code>erlang-dist-cs10.repo</code> files keep working. The generic <code>erlang-dist.repo</code> now serves the CentOS Stream 9/10 builds for any EL9/EL10 system; download it again if you use it.</li>
-                <li><strong>All versions stay installable.</strong> Older releases are no longer dropped; pin one with <code>apt install erlang-29=29.1</code> or <code>dnf install erlang-29-29.1</code>.</li>
-                <li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
-                <li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
-                <li><strong>New platforms:</strong> Ubuntu 26.04, Debian 13, Rocky Linux 10, and arm64 for Debian and Ubuntu 22.04.</li>
-                <li><strong>Windows:</strong> releases now include the official Erlang/OTP x64 installer and zip.</li>
-                <li><strong>macOS:</strong> the build now includes OpenSSL 3.5, so <code>crypto</code> and <code>ssl</code> work without Homebrew's <code>openssl@3</code>.</li>
-                <li><strong>Installer fixed:</strong> <code>install.sh</code> downloaded from a wrong URL and installed into the wrong directory. It now works, including with a custom prefix:
-<pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1 $HOME/.local/erlang</code></pre></li>
-            </ul>
-        </div>
-
-        <h2>Quick Install</h2>
-        <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh</code></pre>
-
-        <p>Or specify a version:</p>
-        <pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- 29.1.1</code></pre>
-
-        <h2>APT Repository (Debian/Ubuntu)</h2>
-        <p>Pick your distro: <code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code> or <code>debian13</code>.</p>
-        <pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
-    sudo tee /etc/apt/sources.list.d/erlang-dist.list
 sudo apt update && sudo apt install erlang-29</code></pre>
+<p>Pin a version with <code>sudo apt install erlang-29=29.1</code>.</p>
+<p class="note"><strong>Unsigned:</strong> <code>[trusted=yes]</code> turns off APT's signature check for this source. See <a href="#verify">what is verified</a>.</p>
+</div>
 
-        <h2>YUM/DNF Repository (RHEL/Rocky/CentOS)</h2>
-        <p>Pick your distro: <code>rocky9</code>, <code>rocky10</code>, <code>cs9</code> or <code>cs10</code>.</p>
-        <pre><code>sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo \
+<div class="method" id="dnf">
+<p class="for">Rocky Linux 9, 10 and CentOS Stream 9, 10, on amd64 and arm64</p>
+<h3>YUM/DNF repository</h3>
+<p>Pick your distro: <code>rocky9</code>, <code>rocky10</code>, <code>cs9</code> or <code>cs10</code>. The generic <code>erlang-dist.repo</code> serves the CentOS Stream builds to any EL9 or EL10 system.</p>
+<pre><code>sudo curl -fsSL https://benoitc.github.io/erlang-dist/rpm/erlang-dist-cs9.repo \
     -o /etc/yum.repos.d/erlang-dist.repo
 sudo dnf install erlang-29</code></pre>
+<p>Pin a version with <code>sudo dnf install erlang-29-29.1</code>.</p>
+<p class="note"><strong>Unsigned:</strong> the repository files set <code>gpgcheck=0</code>. See <a href="#verify">what is verified</a>.</p>
+</div>
 
-        <h2>Windows</h2>
-        <p>Each release includes the official Erlang/OTP x64 installer (<code>.exe</code>) and zip, checked against the erlang/otp release digests.</p>
-        <pre><code>$v = "29.1.1"
+<div class="method" id="windows">
+<p class="for">Windows 10, 11 and Server, x64</p>
+<h3>Windows installer or zip</h3>
+<p>Each release includes the official Erlang/OTP x64 build from the erlang/otp project: an installer (<code>.exe</code>) and a zip, checked against the erlang/otp release digests. Run the installer, or unpack the zip anywhere. In PowerShell:</p>
+<pre><code>$v = "<span data-version>X.Y.Z</span>"
 Invoke-WebRequest "https://github.com/benoitc/erlang-dist/releases/download/OTP-$v/erlang-$v-windows-amd64.zip" -OutFile erlang.zip
 Expand-Archive erlang.zip -DestinationPath "$env:LOCALAPPDATA\erlang"
 &amp; "$env:LOCALAPPDATA\erlang\bin\erl.exe"</code></pre>
+<p>Add <code>%LOCALAPPDATA%\erlang\bin</code> to your <code>PATH</code> to use <code>erl</code> from any shell.</p>
+</div>
 
-        <h2>Supported Platforms</h2>
-        <table>
-            <tr><th>Platform</th><th>Versions</th><th>Architecture</th><th>Packages</th></tr>
-            <tr><td>Ubuntu</td><td>22.04, 24.04, 26.04</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
-            <tr><td>Debian</td><td>12, 13 (11: no new builds)</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
-            <tr><td>Rocky Linux</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
-            <tr><td>CentOS Stream</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
-            <tr><td>macOS</td><td>14+</td><td>arm64</td><td>tarball</td></tr>
-            <tr><td>Windows</td><td>10, 11, Server</td><td>x64</td><td>.exe installer, .zip</td></tr>
-        </table>
+<div class="method" id="manual">
+<p class="for">Any supported platform</p>
+<h3>Manual download</h3>
+<p>Download a tarball, package or Windows file from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a>, then check it against the release's <code>SHA256SUMS</code>. On Linux:</p>
+<pre><code>v=<span data-version>X.Y.Z</span>
+curl -fsSLO https://github.com/benoitc/erlang-dist/releases/download/OTP-$v/erlang-$v-linux-amd64.tar.gz
+curl -fsSL https://github.com/benoitc/erlang-dist/releases/download/OTP-$v/SHA256SUMS | grep linux-amd64.tar.gz | sha256sum -c
+sudo tar xzf erlang-$v-linux-amd64.tar.gz -C /</code></pre>
+<p>On macOS, check with <code>shasum -a 256 -c</code> instead of <code>sha256sum -c</code>. On Windows, compare the output of <code>Get-FileHash .\erlang.zip</code> with the line for that file in <code>SHA256SUMS</code>.</p>
+</div>
+</div>
+</section>
 
-        <h2>Downloads</h2>
-        <p>
-            <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a> ·
-            <a href="https://github.com/benoitc/erlang-dist">Source Code</a>
-        </p>
+<section class="block tint" id="verify">
+<div class="wrap">
+<h2>What is verified</h2>
+<div class="facts">
+<div class="fact"><h3>Checksums</h3><p>Every release publishes <code>SHA256SUMS</code> for its files. The install script checks it. A checksum detects a corrupted download; it comes from the same release, so it is not a signature.</p></div>
+<div class="fact"><h3>No package signing yet</h3><p>Packages are not signed. The APT source uses <code>[trusted=yes]</code> and the DNF repository files set <code>gpgcheck=0</code>.</p></div>
+<div class="fact"><h3>Who built what</h3><p>Linux and macOS packages are built by this project from the upstream erlang/otp releases. The Windows files are the official erlang/otp builds, checked against the upstream digests.</p></div>
+</div>
+</div>
+</section>
 
-        <h2>Direct Links</h2>
-        <ul>
-            <li><a href="install.sh">install.sh</a> - Universal installer script</li>
-        </ul>
-    </div>
+<section class="block" id="platforms">
+<div class="wrap">
+<h2>Supported platforms</h2>
+<div class="scroll-x">
+<table>
+<thead><tr><th scope="col">Platform</th><th scope="col">Versions</th><th scope="col">Architecture</th><th scope="col">Packages</th></tr></thead>
+<tbody>
+<tr><td>Ubuntu</td><td>22.04, 24.04, 26.04</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
+<tr><td>Debian</td><td>12, 13 (11: no new builds)</td><td>amd64, arm64</td><td>.deb, tarball</td></tr>
+<tr><td>Rocky Linux</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
+<tr><td>CentOS Stream</td><td>9, 10</td><td>amd64, arm64</td><td>.rpm, tarball</td></tr>
+<tr><td>macOS</td><td>14+</td><td>arm64 (Apple Silicon)</td><td>tarball</td></tr>
+<tr><td>Windows</td><td>10, 11, Server</td><td>x64</td><td>.exe installer, .zip</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small muted">The latest release of each tracked major version is built automatically when erlang/otp publishes it. Every release stays installable from the APT and DNF repositories. The full list is on <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a> and in <a href="versions.json">versions.json</a>.</p>
+</div>
+</section>
+
+<section class="block tint" id="changes">
+<div class="wrap">
+<h2>Repository changes (2026-10-04)</h2>
+<p>Packages are now downloaded from <a href="https://github.com/benoitc/erlang-dist/releases">GitHub Releases</a>; this site only serves the repository indexes.</p>
+<ul class="clean">
+<li><strong>APT users: action required.</strong> The <code>https://benoitc.github.io/erlang-dist/apt stable main</code> repository is retired and <code>apt update</code> now fails with <code>changed its 'Label' value ... MOVED</code>. Replace your source line with the one for your distro (<code>ubuntu2204</code>, <code>ubuntu2404</code>, <code>ubuntu2604</code>, <code>debian11</code>, <code>debian12</code>, <code>debian13</code>):
+<pre><code>echo "deb [trusted=yes] https://github.com/benoitc/erlang-dist/releases/download/ apt-ubuntu2404/" | \
+    sudo tee /etc/apt/sources.list.d/erlang-dist.list
+sudo apt update</code></pre></li>
+<li><strong>RPM users: nothing to do.</strong> The <code>erlang-dist-rocky9.repo</code>, <code>erlang-dist-rocky10.repo</code>, <code>erlang-dist-cs9.repo</code> and <code>erlang-dist-cs10.repo</code> files keep working. The generic <code>erlang-dist.repo</code> now serves the CentOS Stream 9/10 builds for any EL9/EL10 system; download it again if you use it.</li>
+<li><strong>All versions stay installable.</strong> Older releases are no longer dropped; pin one with <code>apt install erlang-29=29.1</code> or <code>dnf install erlang-29-29.1</code>.</li>
+<li><strong>Debian 11</strong> is end of life and no longer built. Its packages, up to 29.0.6, stay available.</li>
+<li><strong>Rocky Linux 9</strong> builds are back, starting with 29.1.1, 28.5.0.7 and 27.3.4.11.</li>
+<li><strong>New platforms:</strong> Ubuntu 26.04, Debian 13, Rocky Linux 10, and arm64 for Debian and Ubuntu 22.04.</li>
+<li><strong>Windows:</strong> releases now include the official Erlang/OTP x64 installer and zip.</li>
+<li><strong>macOS:</strong> the build now includes OpenSSL 3.5, so <code>crypto</code> and <code>ssl</code> work without Homebrew's <code>openssl@3</code>.</li>
+<li><strong>Installer fixed:</strong> <code>install.sh</code> downloaded from a wrong URL and installed into the wrong directory. It now works, including with a custom prefix:
+<pre><code>curl -fsSL https://benoitc.github.io/erlang-dist/install.sh | sh -s -- <span data-version>X.Y.Z</span> $HOME/.local/erlang</code></pre></li>
+</ul>
+</div>
+</section>
+
+<section class="block help" id="help">
+<div class="wrap">
+<h2>Need help with your Erlang environment?</h2>
+<p>Enki Multimedia provides engineering support for OTP upgrades, build and deployment integration, and production issues. Work with us on a defined project or through an ongoing engineering partnership.</p>
+<div class="row"><a class="btn btn-out" href="https://enki-multimedia.eu/services/erlang/">Erlang engineering at Enki Multimedia</a></div>
+</div>
+</section>
+</main>
+
+<footer class="site-foot">
+<div class="wrap">
+<p>erlang-dist is maintained by <a href="https://github.com/benoitc">Benoît Chesneau</a> and sponsored by <a href="https://enki-multimedia.eu/">Enki Multimedia</a>. Erlang/OTP is developed by the <a href="https://github.com/erlang/otp">erlang/otp</a> project; erlang-dist packages its releases and is not part of that project.</p>
+<p>Scripts: <a href="https://github.com/benoitc/erlang-dist/blob/main/LICENSE">MIT</a>. Erlang/OTP: Apache 2.0. Font: Archivo, <a href="archivo-OFL.txt">SIL Open Font License</a>. <a href="install.sh">install.sh</a> · <a href="versions.json">versions.json</a> · <a href="https://github.com/benoitc/erlang-dist">Source</a></p>
+</div>
+</footer>
 </body>
 </html>
-<!-- Thu Feb 26 02:01:44 CET 2026 -->

@@ -2,6 +2,8 @@
 
 Pre-built Erlang/OTP binaries for multiple platforms, distributed via GitHub Releases.
 
+Maintained by [Benoît Chesneau](https://github.com/benoitc). Sponsored by [Enki Multimedia](https://enki-multimedia.eu/).
+
 ## Quick Install
 
 ```bash
@@ -146,6 +148,10 @@ sha256sum -c SHA256SUMS 2>/dev/null | grep erlang-29.1.1-linux-amd64.tar.gz
 # macOS
 shasum -a 256 -c SHA256SUMS 2>/dev/null | grep erlang-29.1.1-darwin-arm64.tar.gz
 ```
+
+## Professional support
+
+erlang-dist is free to use. If you want help with your own Erlang environment (OTP upgrades, build and deployment integration, production issues), [Enki Multimedia](https://enki-multimedia.eu/services/erlang/) offers engineering support, on a defined project or through an ongoing partnership.
 
 ## Contributing
 

@@ -81,7 +81,8 @@ jobs:
 
       - name: Update site files
         run: |
-          cp install.sh versions.json pages/index.html site/
+          # pages/ must stay flat: the sparse checkout above only keeps root-level files.
+          cp install.sh versions.json pages/* site/
           cp rpm/erlang-dist.repo site/rpm/
           touch site/.nojekyll
 
